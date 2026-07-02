@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מדעי התזונה — סיכום ושאלות</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Assistant:wght@400;600;700&family=Suez+One&display=swap');
+  :root{
+    --ink:#1A1A2E; --coral:#FF6B6B; --teal:#4ECDC4; --yel:#FFD93D; --purp:#7E57C2;
+    --cream:#FFFDF5; --pinkf:#FFE5E5; --yelf:#FFF7D6; --tealf:#E0F7F4; --purpf:#EDE7F6; --grnf:#E8F5D6; --green:#7CB342;
+    --shadow:5px 5px 0 var(--ink);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Assistant',sans-serif;background:var(--cream);color:var(--ink);
+    background-image:radial-gradient(var(--yelf) 2px,transparent 2px);background-size:34px 34px;min-height:100vh;}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px 16px 90px;}
+  button{font-family:inherit;cursor:pointer;}
+  header{text-align:center;margin-bottom:16px;}
+  header .badge{display:inline-block;font-family:'Heebo';font-weight:800;font-size:15px;background:var(--yel);
+    border:4px solid var(--ink);border-radius:30px;padding:6px 20px;box-shadow:4px 4px 0 var(--ink);transform:rotate(-2deg);}
+  header h1{font-family:'Suez One';font-size:clamp(26px,5vw,42px);margin-top:12px;text-shadow:4px 4px 0 var(--yel);}
+
+  /* mode switch */
+  .modeswitch{display:flex;gap:10px;justify-content:center;margin:16px 0;position:sticky;top:10px;z-index:50;}
+  .modebtn{font-family:'Heebo';font-weight:800;font-size:17px;background:#fff;border:4px solid var(--ink);
+    border-radius:30px;padding:10px 26px;box-shadow:3px 3px 0 var(--ink);transition:transform .08s;}
+  .modebtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .modebtn.active{background:var(--ink);color:#fff;}
+
+  .controls{position:sticky;top:74px;z-index:40;background:var(--cream);padding:10px 0;margin-bottom:8px;border-bottom:3px solid var(--ink);}
+  .search-box{display:flex;gap:10px;align-items:center;background:#fff;border:4px solid var(--ink);border-radius:30px;
+    padding:6px 16px;box-shadow:3px 3px 0 var(--ink);}
+  .search-box input{flex:1;border:none;outline:none;font-family:'Assistant';font-weight:600;font-size:17px;background:transparent;}
+  .search-box .ic{font-size:20px;}
+  .navchips{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+  .navchip{flex:none;font-family:'Heebo';font-weight:700;font-size:13px;background:#fff;border:3px solid var(--ink);
+    border-radius:20px;padding:6px 13px;box-shadow:2px 2px 0 var(--ink);white-space:nowrap;}
+  .navchip.active{background:var(--yel);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* ===== SUMMARY styles ===== */
+  .chapter{margin-top:16px;border:4px solid var(--ink);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;background:#fff;}
+  .ch-head{display:flex;align-items:center;gap:12px;padding:15px 18px;cursor:pointer;background:var(--ink);color:#fff;}
+  .ch-head .emoji{font-size:28px;}
+  .ch-head h2{font-family:'Heebo';font-weight:800;font-size:20px;flex:1;}
+  .ch-head .chev{font-size:19px;transition:transform .2s;}
+  .chapter.open .ch-head .chev{transform:rotate(180deg);}
+  .ch-body{display:none;padding:6px 18px 18px;}
+  .chapter.open .ch-body{display:block;}
+  /* cross-link banner */
+  .xlink{display:flex;align-items:center;gap:10px;background:var(--tealf);border:3px solid var(--teal);
+    border-radius:14px;padding:11px 16px;margin:12px 0 4px;font-family:'Heebo';font-weight:800;font-size:15px;
+    width:100%;text-align:right;box-shadow:2px 2px 0 var(--ink);}
+  .xlink:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .xlink .arrow{margin-right:auto;font-size:20px;}
+  .xlink.toSummary{background:var(--purpf);border-color:var(--purp);}
+  .sec{margin-top:14px;}
+  .sec h3{font-family:'Heebo';font-weight:800;font-size:17px;color:var(--ink);background:var(--yelf);
+    border-right:6px solid var(--coral);padding:7px 12px;border-radius:8px;margin-bottom:7px;}
+  .sec p{font-weight:600;font-size:15.5px;line-height:1.55;margin:5px 0;}
+  .sec b{color:#0F7A6E;}
+  .sec ul{margin:6px 22px 8px 0;}
+  .sec li{font-weight:600;font-size:15.5px;line-height:1.5;margin-bottom:5px;}
+  .term{display:inline-block;background:var(--tealf);border:2px solid var(--ink);border-radius:8px;padding:0 6px;font-weight:800;}
+  .bagrut{background:var(--grnf);border:3px dashed var(--green);border-radius:12px;padding:9px 13px;margin:9px 0;}
+  .bagrut::before{content:"⭐ חשוב לבגרות: ";font-family:'Heebo';font-weight:800;color:#5a8a2a;}
+  .bagrut span{font-weight:700;font-size:15px;}
+  .tip{background:var(--purpf);border:3px solid var(--purp);border-radius:12px;padding:9px 13px;margin:9px 0;}
+  .tip::before{content:"💡 טיפ: ";font-family:'Heebo';font-weight:800;color:var(--purp);}
+  .tip span{font-weight:700;font-size:15px;}
+  table.t{width:100%;border-collapse:collapse;margin:8px 0;font-size:14px;}
+  table.t th,table.t td{border:2px solid var(--ink);padding:6px 8px;text-align:center;}
+  table.t th{background:var(--yel);font-family:'Heebo';font-weight:800;}
+  table.t td:first-child{background:var(--yelf);font-weight:700;}
+
+  /* ===== QUESTIONS styles ===== */
+  .qchapter{margin-top:16px;}
+  .qchapter-head{display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:16px;
+    padding:13px 18px;box-shadow:var(--shadow);}
+  .qchapter-head .emoji{font-size:26px;}
+  .qchapter-head h2{font-family:'Heebo';font-weight:800;font-size:20px;flex:1;}
+  .qchapter-head .cnt{font-family:'Heebo';font-weight:800;font-size:14px;background:var(--yel);color:var(--ink);border-radius:20px;padding:3px 11px;}
+  .q{background:#fff;border:4px solid var(--ink);border-radius:16px;box-shadow:4px 4px 0 var(--ink);margin-top:12px;overflow:hidden;}
+  .q-top{display:flex;align-items:flex-start;gap:11px;padding:16px 18px;cursor:pointer;}
+  .q-top .qicon{flex:none;width:32px;height:32px;border-radius:10px;background:var(--yel);border:3px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;transition:transform .2s;}
+  .q.open .q-top .qicon{transform:rotate(45deg);background:var(--coral);}
+  .q-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:7px;}
+  .tag{font-family:'Heebo';font-weight:700;font-size:11px;border-radius:14px;padding:2px 9px;border:2px solid var(--ink);}
+  .tag.year{background:var(--purpf);} .tag.type{background:var(--tealf);} .tag.multi{background:var(--yel);}
+  .q-text{font-family:'Heebo';font-weight:800;font-size:17px;line-height:1.45;}
+  .parts{margin-top:9px;}
+  .part{font-weight:700;font-size:15.5px;line-height:1.5;margin-bottom:5px;}
+  .part .pl,.a-inner .pl{color:var(--coral);font-weight:800;}
+  .mc-list{margin-top:9px;display:flex;flex-direction:column;gap:5px;}
+  .mc-q{font-weight:700;font-size:15.5px;border:2px solid var(--ink);border-radius:12px;padding:7px 13px;background:var(--cream);}
+  .a{max-height:0;overflow:hidden;transition:max-height .35s ease;background:var(--grnf);}
+  .q.open .a{max-height:2000px;border-top:4px solid var(--green);}
+  .a-inner{padding:16px 18px;}
+  .a-inner .alabel{font-family:'Heebo';font-weight:800;font-size:14px;color:var(--green);margin-bottom:7px;}
+  .a-inner p{font-weight:600;font-size:15.5px;line-height:1.5;margin-bottom:5px;}
+  .a-inner b{color:var(--coral);}
+  table.bg{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px;}
+  table.bg th,table.bg td{border:2px solid var(--ink);padding:6px 7px;text-align:center;}
+  table.bg th{background:var(--yel);font-family:'Heebo';font-weight:800;}
+  table.bg td:first-child{background:var(--yelf);font-weight:700;}
+  table.bg.empty td:not(:first-child){background:repeating-linear-gradient(45deg,#fff,#fff 6px,#f4f4f4 6px,#f4f4f4 12px);height:28px;}
+  .mc-ans .opt{display:block;font-weight:600;font-size:15.5px;padding:2px 0;}
+  .mc-ans .opt.correct{color:var(--green);font-weight:800;}
+  .mc-ans .opt.correct::after{content:" ✓";}
+
+  .count{font-family:'Heebo';font-weight:700;font-size:13px;color:#888;margin-top:8px;text-align:center;}
+  .noresults{text-align:center;font-family:'Heebo';font-weight:700;font-size:18px;color:#999;margin-top:40px;}
+  footer{text-align:center;margin-top:40px;font-family:'Heebo';font-weight:700;font-size:13px;color:#9A9AA8;}
+
+  .studyrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:2px dashed var(--purp);}
+  .studylink{font-family:'Heebo';font-weight:800;font-size:14px;background:var(--purpf);color:var(--purp);
+    border:3px solid var(--purp);border-radius:14px;padding:8px 14px;box-shadow:2px 2px 0 var(--ink);min-height:40px;}
+  .studylink:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  @keyframes flash{0%{box-shadow:0 0 0 4px var(--yel);}100%{box-shadow:4px 4px 0 var(--ink);}}
+  .flash{animation:flash 1.2s ease;}
+
+  /* ===== Accessibility toolbar + Text-to-Speech ===== */
+  .a11y-fab{position:fixed;bottom:18px;left:18px;z-index:200;width:58px;height:58px;border-radius:50%;
+    background:var(--purp);color:#fff;border:4px solid var(--ink);box-shadow:3px 3px 0 var(--ink);
+    font-size:27px;display:flex;align-items:center;justify-content:center;transition:bottom .2s;}
+  .a11y-fab:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .a11y-panel{position:fixed;bottom:86px;left:18px;z-index:200;background:#fff;border:4px solid var(--ink);
+    border-radius:18px;box-shadow:var(--shadow);padding:14px;width:280px;max-width:calc(100vw - 36px);display:none;transition:bottom .2s;}
+  .a11y-panel.open{display:block;}
+  .a11y-panel h4{font-family:'Heebo';font-weight:800;font-size:16px;margin-bottom:12px;text-align:center;}
+  .a11y-row{margin-bottom:13px;}
+  .a11y-row .lbl{font-family:'Heebo';font-weight:700;font-size:13px;margin-bottom:6px;display:block;}
+  .a11y-btns{display:flex;gap:6px;flex-wrap:wrap;}
+  .a11y-btns button{flex:1;min-width:54px;min-height:42px;font-family:'Heebo';font-weight:800;font-size:14px;
+    background:var(--cream);border:3px solid var(--ink);border-radius:12px;box-shadow:2px 2px 0 var(--ink);padding:6px;}
+  .a11y-btns button.on{background:var(--yel);}
+  .a11y-btns button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  input[type=range].a11y-range{width:100%;accent-color:var(--purp);height:28px;}
+
+  .readbtn{flex:none;width:36px;height:36px;border-radius:10px;background:var(--yel);border:3px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:2px 2px 0 var(--ink);}
+  .readbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .q-readbtn{margin-bottom:10px;font-family:'Heebo';font-weight:800;font-size:14px;background:var(--tealf);color:var(--ink);
+    border:3px solid var(--teal);border-radius:12px;padding:8px 13px;box-shadow:2px 2px 0 var(--ink);
+    display:inline-flex;align-items:center;gap:6px;min-height:42px;}
+  .q-readbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+
+  .tts-reading{outline:4px solid var(--purp);outline-offset:3px;border-radius:10px;background:var(--purpf)!important;}
+
+  .tts-bar{position:fixed;left:0;right:0;bottom:0;z-index:210;background:var(--ink);color:#fff;
+    padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -3px 0 var(--purp);}
+  .tts-bar.open{display:flex;}
+  .tts-bar button{width:46px;height:46px;border-radius:12px;border:3px solid #fff;background:transparent;color:#fff;font-size:19px;flex:none;}
+  .tts-bar button:active{background:rgba(255,255,255,.15);}
+  .tts-bar .tts-txt{flex:1;font-family:'Heebo';font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  body.tts-on .a11y-fab{bottom:90px;}
+  body.tts-on .a11y-panel{bottom:158px;}
+
+  /* dyslexia-friendly spacing toggle */
+  body.a11y-spacing .sec p,body.a11y-spacing .sec li,body.a11y-spacing .a-inner p,
+  body.a11y-spacing .q-text,body.a11y-spacing .part,body.a11y-spacing .mc-q,body.a11y-spacing .mc-ans .opt,
+  body.a11y-spacing .bagrut span,body.a11y-spacing .tip span{
+    line-height:2.05!important;letter-spacing:.4px;word-spacing:2px;}
+  /* clean background toggle */
+  body.a11y-plainbg{background-image:none!important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">מדעי התזונה · שאלון 798381</span>
+    <h1>סיכום ושאלות — הכול במקום אחד</h1>
+  </header>
+
+  <div class="modeswitch">
+    <button class="modebtn active" id="btnSummary" onclick="setMode('summary')">📖 סיכום</button>
+    <button class="modebtn" id="btnQuestions" onclick="setMode('questions')">🎓 שאלות</button>
+  </div>
+
+  <div class="controls">
+    <div class="search-box"><span class="ic">🔍</span><input id="search" type="text" placeholder="חיפוש..."></div>
+    <div class="navchips" id="navchips"></div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div class="view active" id="view-summary"><div id="summaryContent"></div></div>
+  <div class="view" id="view-questions"><div id="questionsContent"></div></div>
+  <div class="noresults" id="noresults" style="display:none;">לא נמצאו תוצאות 🤔</div>
+
+  <footer>ממעבדת הניסויים של מרי גרבי · מדעי התזונה 798381</footer>
+</div>
+
+<!-- ===== Accessibility toolbar ===== -->
+<button class="a11y-fab" id="a11yFab" title="נגישות והקראה" aria-label="פתיחת תפריט נגישות והקראה">♿</button>
+<div class="a11y-panel" id="a11yPanel" role="dialog" aria-label="נגישות והקראה">
+  <h4>נגישות והקראה 🔊</h4>
+  <div class="a11y-row">
+    <span class="lbl">גודל טקסט</span>
+    <div class="a11y-btns">
+      <button id="fontMinus" aria-label="הקטנת טקסט">A−</button>
+      <button id="fontReset" aria-label="גודל רגיל">100%</button>
+      <button id="fontPlus" aria-label="הגדלת טקסט">A+</button>
+    </div>
+  </div>
+  <div class="a11y-row">
+    <span class="lbl">קריאה נוחה</span>
+    <div class="a11y-btns">
+      <button id="tglSpacing" aria-pressed="false">📏 ריווח</button>
+      <button id="tglBg" aria-pressed="false">🌫️ רקע נקי</button>
+    </div>
+  </div>
+  <div class="a11y-row">
+    <span class="lbl">מהירות הקראה: <span id="rateVal">1.0</span></span>
+    <input type="range" class="a11y-range" id="rateRange" min="0.6" max="1.4" step="0.1" value="1" aria-label="מהירות הקראה">
+  </div>
+</div>
+<div class="tts-bar" id="ttsBar" role="status" aria-live="polite">
+  <button id="ttsToggle" title="השהה / המשך" aria-label="השהה או המשך הקראה">⏸</button>
+  <button id="ttsStop" title="עצור הקראה" aria-label="עצירת הקראה">⏹</button>
+  <div class="tts-txt" id="ttsTxt">קורא…</div>
+</div>
+
+<script>
+/* ===== DATA ===== */
+const TOPICS={"carbs": {"name": "פחמימות", "emoji": "🍞"}, "protein": {"name": "חלבונים", "emoji": "🥚"}, "fat": {"name": "שומנים", "emoji": "🥑"}, "vit": {"name": "ויטמינים", "emoji": "🍊"}, "min": {"name": "מינרלים", "emoji": "🧂"}, "water": {"name": "מים", "emoji": "💧"}, "digest": {"name": "מערכת העיכול", "emoji": "🦷"}, "intro": {"name": "מבוא / פירמידה / תווית", "emoji": "🍽️"}, "sport": {"name": "פעילות גופנית", "emoji": "🏃"}, "energy": {"name": "אנרגיה", "emoji": "⚡"}, "life": {"name": "מעגל החיים", "emoji": "🤰"}};
+const TYPES={"open": "שאלה פתוחה", "mc": "רב-ברירה", "table": "טבלה", "term": "הסבר מונח"};
+const Q=[{"topics": ["carbs"], "ty": "open", "y": "תשע\"ח 2018", "q": "סוכרים — השלימו טבלת שלוש קבוצות סוכרים (חד / דו / רב): שם סוכר, מסיסות במים, מקור מזון, טעם מתוק, ומהירות ההשפעה על רמת הסוכר בדם. הסבירו מהו אינדקס גליקמי.", "ans": "<table class=\"bg\"><tr><th>קבוצה</th><th>דוגמה</th><th>מסיסות</th><th>מקור</th><th>טעם</th><th>השפעה על הסוכר</th></tr>\n <tr><td>חד-סוכר</td><td>גלוקוז</td><td>מסיס</td><td>צומח</td><td>מתוק</td><td>מהירה</td></tr>\n <tr><td>דו-סוכר</td><td>סוכרוז</td><td>מסיס</td><td>צומח/חי</td><td>מתוק</td><td>מהירה</td></tr>\n <tr><td>רב-סוכר</td><td>עמילן</td><td>לא מסיס</td><td>צומח</td><td>לא מתוק</td><td>איטית</td></tr></table>\n <p><b>אינדקס גליקמי</b> = מדד למהירות שבה הפחמימה מעלה את רמת הסוכר בדם. רב-סוכרים מתאפיינים באינדקס נמוך.</p>", "hasTable": true}, {"topics": ["carbs"], "ty": "open", "y": "תשפ\"ב 2022 · תשע\"ז 2017", "q": "סיבים תזונתיים — לאיזו קבוצת פחמימות הם שייכים? ציינו שני מזונות המכילים סיבים, והסבירו את חשיבותם לגוף.", "ans": "<p>הסיבים שייכים ל<b>פחמימות מורכבות (רב-סוכרים)</b>.</p><p>מזונות: דגנים מלאים, ירקות, קטניות.</p><p>חשיבות: שמירה על תקינות מערכת העיכול, מניעת עצירות, תחושת שובע, והאטת ספיגת הסוכר והכולסטרול לדם.</p>"}, {"topics": ["carbs"], "ty": "open", "y": "תש\"ף 2020", "q": "ציינו את שתי קבוצות הסיבים התזונתיים והסבירו את תפקיד כל אחת.", "ans": "<p><b>מסיסים במים (פקטין):</b> סופחים כולסטרול וסוכר ומאטים את ספיגתם.</p><p><b>לא מסיסים (תאית, סובין, ליגנין):</b> ממריצים את מערכת העיכול ומונעים עצירות.</p>"}, {"topics": ["carbs"], "ty": "open", "y": "תשפ\"ג 2023 · תשפ\"ב 2022 · תשע\"ט 2019", "q": "אינדקס גליקמי — הסבירו מהו, ציינו שלוש דוגמאות למזון בעל אינדקס גבוה ושתיים בעל אינדקס נמוך. מדוע בשר וביצים בעלי אינדקס נמוך מאוד?", "ans": "<p>אינדקס גליקמי = מדד למהירות העלאת הסוכר בדם.</p><p><b>גבוה:</b> לחם לבן, תפוח אדמה מבושל, אורז לבן, סוכר.</p><p><b>נמוך:</b> קטניות, דגנים מלאים, ירקות.</p><p>בשר וביצים כמעט אינם מכילים פחמימות, ולכן כמעט אינם משפיעים על רמת הסוכר (אינדקס ~0).</p>"}, {"topics": ["carbs"], "ty": "open", "y": "תשע\"ט 2019", "q": "ציינו פחמימה מורכבת שמקורה במזון, ופחמימה מורכבת המיוצרת בגוף. ציינו פחמימה שאינה מתעכלת בגוף והסבירו מדוע מומלץ לצרוך אותה.", "ans": "<p>מהמזון: <b>עמילן</b>. בגוף: <b>גליקוגן</b>.</p><p>שאינה מתעכלת: <b>תאית (סיבים)</b> — מומלצת כי היא שומרת על תקינות מערכת העיכול ומונעת עצירות.</p>"}, {"topics": ["carbs"], "ty": "open", "y": "תשפ\"ד 2024", "q": "איזו פחמימה אינה מתעכלת בגוף ומהי חשיבותה? ציינו שלושה מזונות המכילים אותה, ושני חסרונות של צריכה מוגברת.", "ans": "<p><b>סיבים תזונתיים (תאית).</b> חשיבות: עיכול תקין.</p><p>מזונות: דגנים מלאים, ירקות, קטניות.</p><p>חסרונות בעודף: פגיעה בספיגת מינרלים (ברזל/סידן), נפיחות וגזים.</p>"}, {"topics": ["carbs"], "ty": "open", "y": "תשפ\"א 2021", "q": "הסבירו את תהליך הנשימה התאית (מגיבים ותוצרים). לאיזו קבוצת פחמימות שייכת התאית, וציינו שני מקורות שלה.", "ans": "<p>נשימה תאית: <b>גלוקוז + חמצן → אנרגיה (ATP) + פחמן דו-חמצני + מים.</b></p><p>תאית = רב-סוכר. מקורות: ירקות, דגנים מלאים, קטניות.</p>"}, {"topics": ["carbs", "fat", "energy"], "ty": "open", "y": "תשפ\"ו 2026", "q": "חומרי תשמורת — הגדירו את המונח ותפקידו. איזה חומר (שומן או גליקוגן) משמש בפעילות אירובית אינטנסיבית? מדוע עמילן אינו יכול לשמש חומר תשמורת בגוף האדם?", "ans": "<p><b>חומר תשמורת</b> = מאגר אנרגיה לשעת הצורך.</p><p>בפעילות אירובית אינטנסיבית משמש ה<b>גליקוגן</b> (זמין ומתפרק מהר לאנרגיה).</p><p>עמילן הוא חומר תשמורת של הצמח; האדם מפרק אותו לגלוקוז ואינו אוגר אותו כעמילן.</p>"}, {"topics": ["carbs"], "ty": "open", "y": "תשפ\"ו 2026", "q": "איזה רכיב תזונתי מצוי בכמות גבוהה בלחם מקמח מלא לעומת לבן? ציינו שלושה יתרונות שלו. מהו הרכיב שמסמיך דייסת שיבולת שועל?", "ans": "<p>הרכיב: <b>סיבים תזונתיים.</b></p><p>יתרונות: עיכול תקין, תחושת שובע, האטת ספיגת סוכר/כולסטרול.</p><p>המסמיך את הדייסה: סיב מסיס (בטא-גלוקן).</p>"}, {"topics": ["carbs"], "ty": "open", "y": "תשפ\"ד 2024 · תשע\"ט 2019", "q": "סוכרת — בסוכרת סוג 1 חסר הורמון. ציינו את שמו ואת האיבר המפריש אותו, ושתי המלצות אורח חיים. מדוע חשוב לחולה להכיר את המדד הגליקמי?", "ans": "<p>ההורמון: <b>אינסולין</b>, המופרש מה<b>לבלב</b>.</p><p>המלצות: תזונה מאוזנת דלת סוכר פשוט, פעילות גופנית, ניטור סוכר.</p><p>הכרת המדד הגליקמי עוזרת לבחור מזון שלא יקפיץ את הסוכר בדם.</p>"}, {"topics": ["carbs"], "ty": "mc", "y": "תשפ\"ד 2024", "q": "מאילו יסודות מורכבות הפחמימות?", "mc": [{"t": "גופרית, פחמן, מימן", "correct": false}, {"t": "פחמן, מימן, חנקן", "correct": false}, {"t": "פחמן, מימן, חמצן", "correct": true}, {"t": "פחמן, חמצן, חנקן", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תש\"ף 2020 · תשפ\"ד 2024", "q": "ממה מורכב עמילן?", "mc": [{"t": "מולקולות גלוקוז", "correct": true}, {"t": "גליצרול", "correct": false}, {"t": "חומצות אמיניות", "correct": false}, {"t": "פרוקטוז", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשע\"ח 2018 · תשפ\"ב 2022", "q": "מהו סוכרוז (סוכר לבן)?", "mc": [{"t": "חד-סוכר", "correct": false}, {"t": "דו-סוכר", "correct": true}, {"t": "רב-סוכר", "correct": false}, {"t": "סיב תזונתי", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשפ\"ג 2023", "q": "מה מהבאים הוא דו-סוכר?", "mc": [{"t": "חלבון", "correct": false}, {"t": "סוכרזית", "correct": false}, {"t": "לקטוז", "correct": true}, {"t": "גלוטן", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תש\"ף 2020 · תשפ\"ב 2022", "q": "באיזה סעיף מופיעות רק פחמימות מורכבות?", "mc": [{"t": "גלוקוז, עמילן, תאית", "correct": false}, {"t": "עמילן, גליקוגן, תאית", "correct": true}, {"t": "גלוקוז, פרוקטוז, סוכרוז", "correct": false}, {"t": "לקטוז, מלטוז, עמילן", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשע\"ט 2019 · תשפ\"א 2021 · תשפ\"ב 2022", "q": "מדוע מומלץ להמעיט בצריכת פחמימות פשוטות?", "mc": [{"t": "הן מתוקות מדי", "correct": false}, {"t": "ערכן התזונתי נמוך (\"קלוריות ריקות\")", "correct": true}, {"t": "קשות לעיכול", "correct": false}, {"t": "אינן מספקות אנרגיה", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "צריכה של איזה מזון תגרום לעלייה מהירה ברמת הסוכר בדם?", "mc": [{"t": "לחם שיפון", "correct": false}, {"t": "עדשים מבושלות", "correct": false}, {"t": "פירה תפוחי אדמה", "correct": true}, {"t": "חזה עוף", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "מדוע צריכה עודפת של סיבים תזונתיים עלולה להזיק?", "mc": [{"t": "גורמים לעלייה חדה בסוכר", "correct": false}, {"t": "הופכים לשומן טראנס", "correct": false}, {"t": "קושרים מינרלים (ברזל/סידן) ומונעים את ספיגתם", "correct": true}, {"t": "מונעים העברת ויטמין D", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "איזה מזון מכיל את הכמות הגבוהה ביותר של פחמימות?", "mc": [{"t": "חלב פרה", "correct": true}, {"t": "ביצי חופש", "correct": false}, {"t": "דגי סלמון", "correct": false}, {"t": "חזה עוף", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשפ\"ד 2024", "q": "מהו תפקיד הגלוקוז בגוף?", "mc": [{"t": "בניית רקמות", "correct": false}, {"t": "אספקת אנרגיה לתהליכי החיים", "correct": true}, {"t": "הובלת חמצן", "correct": false}, {"t": "קרישת דם", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשע\"ט 2019", "q": "איזו פחמימה אינה מסיסה במים?", "mc": [{"t": "גלוקוז", "correct": false}, {"t": "גליקוגן", "correct": true}, {"t": "פרוקטוז", "correct": false}, {"t": "סוכרוז", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשפ\"ה 2025", "q": "מהו המקור העיקרי לגלוקוז בגוף?", "mc": [{"t": "חלבונים", "correct": false}, {"t": "שומנים", "correct": false}, {"t": "פחמימות", "correct": true}, {"t": "ויטמינים", "correct": false}]}, {"topics": ["carbs", "digest"], "ty": "mc", "y": "תש\"ף 2020", "q": "איזה חומר אינו מתעכל בקיבה ובמעי?", "mc": [{"t": "לקטוז", "correct": false}, {"t": "עמילן", "correct": false}, {"t": "תאית", "correct": true}, {"t": "חלבון", "correct": false}]}, {"topics": ["carbs"], "ty": "mc", "y": "תשע\"ח 2018 · תשפ\"ב 2022", "q": "מהו הטיפול המיידי לאדם עם רמת סוכר נמוכה בדם (היפוגליקמיה)?", "mc": [{"t": "מתן מזון או משקה המכילים סוכר", "correct": true}, {"t": "מתן מים בלבד", "correct": false}, {"t": "מנוחה ללא אוכל", "correct": false}, {"t": "הזרקת אינסולין", "correct": false}]}, {"topics": ["protein"], "ty": "open", "y": "תשע\"ח 2018", "q": "ציינו שלושה תפקידים של החלבונים בגוף. הסבירו מהו חלבון מלא וציינו שני מזונות המכילים אותו.", "ans": "<p>תפקידים: בנייה וחידוש תאים ורקמות, מרכיב באנזימים והורמונים, נוגדנים במערכת החיסון, מקור אנרגיה חלופי.</p><p><b>חלבון מלא</b> = מכיל את כל חומצות האמינו החיוניות. מזונות: בשר, ביצים, דגים, מוצרי חלב.</p>"}, {"topics": ["protein"], "ty": "open", "y": "תשפ\"ד 2024", "q": "ציינו שני תפקידים של החלבונים. הסבירו מהו חלבון מלא. האם עדשים לבדן מספקות חלבון מלא?", "ans": "<p>תפקידים: בנייה וחידוש רקמות, מרכיב באנזימים/הורמונים/נוגדנים.</p><p>עדשים לבדן <b>אינן</b> חלבון מלא (חסרות חלק מחומצות האמינו) — יש לשלב אותן עם דגן (אורז/לחם).</p>"}, {"topics": ["protein"], "ty": "open", "y": "תשפ\"ה 2025", "q": "ציינו שתי סיבות לחשיבות צריכת החלבונים. כיצד מסולקים עודפי חלבון מהגוף, ואיזה איבר עלול להיפגע מצריכת יתר?", "ans": "<p>סיבות: בניית וחידוש רקמות, מרכיב באנזימים/הורמונים/מערכת החיסון.</p><p>עודפים מפורקים בכבד ומסולקים דרך הכליות (בשתן). צריכת יתר ממושכת פוגעת ב<b>כליות</b>.</p>"}, {"topics": ["protein"], "ty": "open", "y": "תשפ\"ג 2023", "q": "הסבירו מהי חומצה אמינית ומהי חומצה אמינית חיונית. ציינו שני מקורות מהחי ומקור אחד מהצומח.", "ans": "<p><b>חומצה אמינית</b> = אבן הבניין של החלבון. <b>חיונית</b> = הגוף אינו מסוגל לייצרה ולכן חייבים לקבלה מהמזון.</p><p>מהחי: בשר, ביצים, דגים, חלב. מהצומח: קטניות.</p>"}, {"topics": ["protein"], "ty": "open", "y": "תשפ\"א 2021", "q": "הסבירו מהי חומצה אמינית חיונית. דרגו מזונות לפי ערכם החלבוני. הסבירו מהי דנטורציה וציינו שני גורמים לה.", "ans": "<p>חומצה אמינית חיונית = מתקבלת מהמזון בלבד.</p><p>דירוג (גבוה→נמוך): ביצה/סטייק → גבינה לבנה → שעועית ירוקה.</p><p><b>דנטורציה</b> = שינוי המבנה המרחבי של החלבון. גורמים: חום, חומצה, ערבוב מכני.</p>"}, {"topics": ["protein"], "ty": "open", "y": "תשפ\"ג 2023", "q": "הסבירו מהי דנטורציה של חלבון ואת תהליך היווצרותה. ציינו שני מזונות בעלי ערך חלבוני גבוה ושניים בעלי ערך נמוך.", "ans": "<p>דנטורציה = שינוי המבנה המרחבי של החלבון (למשל קרישת חלבון הביצה בטיגון). התכונות משתנות אך החלבון אינו \"נהרס\" כימית.</p><p>ערך גבוה: בשר, ביצים. ערך נמוך: ירקות, דגנים.</p>"}, {"topics": ["protein"], "ty": "open", "y": "תשע\"ז 2017", "q": "הסבירו מהי חומצה אמינית חיונית. כיצד טבעונים יכולים לספק לגופם חלבון מלא?", "ans": "<p>חומצה אמינית חיונית = מתקבלת מהמזון בלבד.</p><p>טבעונים משלבים <b>קטנייה + דגן</b> (חומוס+טחינה, אורז+עדשים) — כל אחד משלים את חומצות האמינו החסרות בשני.</p>"}, {"topics": ["protein"], "ty": "mc", "y": "תשע\"ח 2018 · תשפ\"ד 2024", "q": "מהו ההיגד הנכון לגבי חומצות אמיניות חיוניות?", "mc": [{"t": "מקורן במזון בלבד", "correct": true}, {"t": "הגוף מייצר אותן", "correct": false}, {"t": "הן רב-סוכרים", "correct": false}, {"t": "מצויות רק בצומח", "correct": false}]}, {"topics": ["protein"], "ty": "mc", "y": "תשע\"ט 2019", "q": "מה מבדיל בין חלבונים שונים?", "mc": [{"t": "מספר, סוג וסדר חומצות האמינו", "correct": true}, {"t": "צבעם", "correct": false}, {"t": "מקורם בלבד", "correct": false}, {"t": "כמות הקלוריות", "correct": false}]}, {"topics": ["protein"], "ty": "mc", "y": "תשע\"ט 2019", "q": "מה מאפיין חלבון שעבר דנטורציה?", "mc": [{"t": "הוא מתפרק לסוכרים", "correct": false}, {"t": "מתווספות לו חומצות אמינו", "correct": false}, {"t": "מבנהו המרחבי משתנה", "correct": true}, {"t": "הוא הופך לשומן", "correct": false}]}, {"topics": ["protein"], "ty": "mc", "y": "תשפ\"א 2021", "q": "איזו מולקולה מכילה חנקן?", "mc": [{"t": "גלוקוז", "correct": false}, {"t": "חומצה אמינית", "correct": true}, {"t": "חומצת שומן", "correct": false}, {"t": "גליצרול", "correct": false}]}, {"topics": ["protein"], "ty": "mc", "y": "תשפ\"א 2021", "q": "מה מאפיין חלבון שאינו מלא?", "mc": [{"t": "מקורו בחי", "correct": false}, {"t": "מקורו בעולם הצומח", "correct": true}, {"t": "מכיל את כל חומצות האמינו", "correct": false}, {"t": "עשיר בשומן", "correct": false}]}, {"topics": ["protein"], "ty": "mc", "y": "תשפ\"ד 2024", "q": "אכילת בשר בקר מספקת בעיקר:", "mc": [{"t": "פחמימות", "correct": false}, {"t": "חלבון לא מלא", "correct": false}, {"t": "חלבון מלא", "correct": true}, {"t": "סיבים", "correct": false}]}, {"topics": ["protein"], "ty": "mc", "y": "תשפ\"ה 2025", "q": "מהו המקור הטוב ביותר לחלבון מלא?", "mc": [{"t": "ביצים", "correct": true}, {"t": "אורז", "correct": false}, {"t": "תפוח", "correct": false}, {"t": "שמן זית", "correct": false}]}, {"topics": ["fat"], "ty": "open", "y": "תשע\"ח 2018 · תשפ\"ב 2022", "q": "מהו התהליך התעשייתי שבעקבותיו נוצר שומן טראנס? הביאו דוגמה לחומר המכיל אותו, והסבירו מדוע לא מומלץ לצרוך אותו.", "ans": "<p>התהליך: <b>הידרוגנציה</b> (הקשיית שמן צמחי נוזלי לשומן מוצק ע\"י הוספת מימן). דוגמה: מרגרינה, מאפים תעשייתיים.</p><p>לא מומלץ: מעלה כולסטרול \"רע\" (LDL), מוריד \"טוב\" (HDL), ומגביר סיכון לטרשת עורקים ומחלות לב.</p>"}, {"topics": ["fat"], "ty": "open", "y": "תש\"ף 2020", "q": "ציינו שלושה תפקידים של שומנים. ציינו שומן רווי + שלושה מזונות, ושומן בלתי-רווי + שלושה מזונות.", "ans": "<p>תפקידים: מאגר אנרגיה, בידוד ושמירת חום, הגנה על איברים, מסיסות ויטמינים A,D,E,K, בניית קרום התא.</p><p><b>רווי</b> (מוצק, מהחי): חמאה, בשר שמן, גבינה צהובה. <b>בלתי-רווי</b> (נוזלי): שמן זית, אבוקדו, אגוזים, סלמון.</p>"}, {"topics": ["fat"], "ty": "open", "y": "תשפ\"ה 2025", "q": "הבחינו בין חומצת שומן רוויה לבלתי-רוויה (דוגמה לכל אחת). ציינו שלושה תפקידים של הכולסטרול בגוף.", "ans": "<p>רוויה = ללא קשרים כפולים (חמאה/בשר); בלתי-רוויה = עם קשר כפול (שמן זית/דגים).</p><p>כולסטרול: חומר מוצא להורמונים, מרכיב בקרום התא, בסיס לחומצות מרה ולוויטמין D.</p>"}, {"topics": ["fat"], "ty": "open", "y": "תשע\"ז 2017", "q": "מאילו יסודות כימיים מורכב השומן? ציינו שני תפקידים של הכולסטרול.", "ans": "<p>יסודות: פחמן, מימן, חמצן.</p><p>כולסטרול: בניית הורמונים, מרכיב בקרום התא.</p>"}, {"topics": ["fat"], "ty": "open", "y": "תשפ\"ד 2024", "q": "מהי כמות הכולסטרול בעדשים? מדוע רמת LDL גבוהה מסוכנת? כיצד נקראת דיאטה ללא כולסטרול?", "ans": "<p>בעדשים יש <b>אפס</b> כולסטרול (כולסטרול מצוי רק במזון מהחי).</p><p>LDL גבוה שוקע בדפנות העורקים → טרשת עורקים ומחלות לב.</p><p>דיאטה ללא כולסטרול = דיאטה <b>טבעונית</b>.</p>"}, {"topics": ["fat"], "ty": "mc", "y": "תשע\"ח 2018", "q": "עלייה בתחלואה בטרשת העורקים קשורה לצריכה מוגברת של:", "mc": [{"t": "פחמימות", "correct": false}, {"t": "שומנים רוויים", "correct": true}, {"t": "סיבים", "correct": false}, {"t": "חלבונים", "correct": false}]}, {"topics": ["fat"], "ty": "mc", "y": "תשע\"ח 2018 · תשפ\"ב 2022 · תשפ\"ד 2024", "q": "מהו ההיגד הנכון לגבי כולסטרול?", "mc": [{"t": "הוא סוג של פחמימה", "correct": false}, {"t": "מצוי רק בצומח", "correct": false}, {"t": "משמש חומר מוצא לבניית הורמונים", "correct": true}, {"t": "אין לו תפקיד בגוף", "correct": false}]}, {"topics": ["fat"], "ty": "mc", "y": "תשפ\"א 2021", "q": "למה משמשים השומנים בגוף?", "mc": [{"t": "הובלת חמצן", "correct": false}, {"t": "בניית הורמונים, מרכיב בקרום התא ורקמת בידוד", "correct": true}, {"t": "קרישת דם", "correct": false}, {"t": "ייצור נוגדנים", "correct": false}]}, {"topics": ["fat"], "ty": "mc", "y": "תש\"ף 2020", "q": "איזה מזון עשיר באומגה 3?", "mc": [{"t": "חזה עוף", "correct": false}, {"t": "דג סלמון", "correct": true}, {"t": "לחם לבן", "correct": false}, {"t": "תפוח", "correct": false}]}, {"topics": ["fat"], "ty": "mc", "y": "תשפ\"ה 2025", "q": "מהו ההיגד הנכון לגבי שומן ושמן?", "mc": [{"t": "שניהם מוצקים", "correct": false}, {"t": "שומן מוצק ושמן נוזלי בטמפ' החדר", "correct": true}, {"t": "שניהם נוזליים", "correct": false}, {"t": "אין ביניהם הבדל", "correct": false}]}, {"topics": ["fat"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "איזה מזון עשיר בחומצות שומן בלתי-רוויות?", "mc": [{"t": "חמאה", "correct": false}, {"t": "מרגרינה", "correct": false}, {"t": "שמן דגים", "correct": true}, {"t": "שומן כבש", "correct": false}]}, {"topics": ["fat"], "ty": "mc", "y": "תשפ\"א 2021", "q": "מהם גורמי הסיכון למחלות לב?", "mc": [{"t": "שתיית מים מרובה", "correct": false}, {"t": "עישון, תורשה, חוסר פעילות ומזון מתועש", "correct": true}, {"t": "צריכת ירקות", "correct": false}, {"t": "שינה מרובה", "correct": false}]}, {"topics": ["fat", "carbs"], "ty": "mc", "y": "תשפ\"א 2021 · תשפ\"ב 2022", "q": "באיזה מזון יש הכי פחות קלוריות (ל-100 גרם)?", "mc": [{"t": "שמן זית", "correct": false}, {"t": "חמאה", "correct": false}, {"t": "סוכר לבן (פחמימה — 4 קל\\' לגרם מול שומן 9)", "correct": true}, {"t": "שקדים", "correct": false}]}, {"topics": ["vit"], "ty": "open", "y": "תשע\"ח 2018", "q": "ציינו שני תפקידים של ויטמין C ושלושה מזונות מהצומח העשירים בו.", "ans": "<p>תפקידים: חיזוק מערכת החיסון, בניית קולגן, נוגד חמצון, סיוע בספיגת ברזל.</p><p>מזונות: פלפל, פרי הדר, עגבנייה, קיווי.</p>"}, {"topics": ["vit"], "ty": "open", "y": "תשפ\"ג 2023 · תשע\"ז 2017", "q": "ציינו שני ויטמינים מסיסים במים ושניים מסיסים בשומן. ציינו שלושה מקורות לוויטמין C.", "ans": "<p>מסיסים במים: <b>C, B</b>. מסיסים בשומן: <b>A, D, E, K</b>.</p><p>מקורות לוויטמין C: פלפל, הדרים, עגבנייה, ברוקולי.</p>"}, {"topics": ["vit"], "ty": "open", "y": "תשפ\"א 2021", "q": "ציינו שני ויטמינים שהגוף מסוגל לייצר, את תפקידם ואת מקורם.", "ans": "<p><b>ויטמין D</b> — מיוצר בעור מקרינת שמש; מסייע בספיגת סידן. <b>ויטמין K</b> — מיוצר ע\"י חיידקי המעי; חיוני לקרישת דם.</p>"}, {"topics": ["vit"], "ty": "open", "y": "תשע\"ט 2019", "q": "באיזה תהליך מעורב ויטמין D ומהי חשיבותו? ציינו שני מזונות המכילים אותו.", "ans": "<p>מעורב בספיגת הסידן במעי ובבריאות העצם.</p><p>מזונות: דגים שמנים, חלמון ביצה, חלב מועשר. (גם נוצר בעור מחשיפה לשמש.)</p>"}, {"topics": ["vit"], "ty": "open", "y": "תש\"ף 2020", "q": "ציינו שני ויטמינים מקבוצת B, מזון לכל אחד, את תפקידם ותופעה הנובעת ממחסור.", "ans": "<p>B1 (תיאמין) — דגנים; חשוב למערכת העצבים; מחסור = מחלת בריברי.</p><p>B12 — מזון מהחי; חיוני לייצור דם; מחסור = אנמיה.</p>"}, {"topics": ["vit"], "ty": "open", "y": "תשפ\"ו 2026", "q": "ציינו שני תפקידים של ויטמין B12, שני תסמיני מחסור, ושני מקורות (ללא תוספי תזונה).", "ans": "<p>תפקידים: ייצור תאי דם אדומים, תפקוד מערכת העצבים.</p><p>תסמיני מחסור: אנמיה, עייפות, נימול, פגיעה עצבית.</p><p>מקורות: בשר, דגים, ביצים, חלב (מהחי בלבד).</p>"}, {"topics": ["vit"], "ty": "mc", "y": "תשע\"ח 2018 · תש\"ף 2020", "q": "למה גורם חסר בוויטמין A?", "mc": [{"t": "צפדינה", "correct": false}, {"t": "רככת", "correct": false}, {"t": "אנמיה", "correct": false}, {"t": "עיוורון לילה", "correct": true}]}, {"topics": ["vit"], "ty": "mc", "y": "תשע\"ז 2017 · תשפ\"א 2021 · תשפ\"ה 2025", "q": "חוסר באיזה ויטמין גורם למחלת הצפדינה (סקורבוט)?", "mc": [{"t": "ויטמין A", "correct": false}, {"t": "ויטמין C", "correct": true}, {"t": "ויטמין D", "correct": false}, {"t": "ויטמין K", "correct": false}]}, {"topics": ["vit"], "ty": "mc", "y": "תשפ\"ה 2025", "q": "איזה ויטמין חיוני לקרישת דם?", "mc": [{"t": "ויטמין A", "correct": false}, {"t": "ויטמין C", "correct": false}, {"t": "ויטמין D", "correct": false}, {"t": "ויטמין K", "correct": true}]}, {"topics": ["vit"], "ty": "mc", "y": "תשפ\"ג 2023 · תשפ\"ו 2026", "q": "איזה ויטמין מסיס במים?", "mc": [{"t": "ויטמין A", "correct": false}, {"t": "ויטמין C", "correct": true}, {"t": "ויטמין D", "correct": false}, {"t": "ויטמין K", "correct": false}]}, {"topics": ["vit"], "ty": "mc", "y": "תשפ\"א 2021", "q": "אילו ויטמינים מסיסים בשומן?", "mc": [{"t": "B, C", "correct": false}, {"t": "A, D, E", "correct": true}, {"t": "C, K", "correct": false}, {"t": "B, D", "correct": false}]}, {"topics": ["vit", "fat"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "איזה מזון מומלץ לצרוך כדי לסייע בספיגת ויטמין K?", "mc": [{"t": "חזה עוף", "correct": false}, {"t": "תפוח אדמה", "correct": false}, {"t": "שמן זית", "correct": true}, {"t": "גבינה לבנה", "correct": false}]}, {"topics": ["vit", "min"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "מהו תפקידו המרכזי של ויטמין D?", "mc": [{"t": "סיוע בספיגת סידן בקיבה", "correct": false}, {"t": "סיוע בספיגת סידן במעי", "correct": true}, {"t": "ייצור אנזימים בכבד", "correct": false}, {"t": "ייצור אנזימים בכליות", "correct": false}]}, {"topics": ["vit"], "ty": "mc", "y": "תשע\"ט 2019", "q": "מהם אנטי-אוקסידנטים?", "mc": [{"t": "חומרים נוגדי חמצון", "correct": true}, {"t": "סוג של שומן", "correct": false}, {"t": "חומצות אמינו", "correct": false}, {"t": "מינרלים", "correct": false}]}, {"topics": ["vit"], "ty": "term", "y": "תשע\"ז 2017", "q": "הסבירו את המונח: רככת", "ans": "<p>מחלת עצמות בילדים הנגרמת ממחסור בוויטמין D (פגיעה בספיגת סידן ובבניית העצם).</p>"}, {"topics": ["vit", "life"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "באיזו תקופה במעגל החיים יש חשיבות מיוחדת לצריכת חומצה פולית?", "mc": [{"t": "היריון", "correct": true}, {"t": "ינקות", "correct": false}, {"t": "ילדות", "correct": false}, {"t": "גיל ההתבגרות", "correct": false}]}, {"topics": ["min"], "ty": "open", "y": "תשע\"ח 2018 · תשפ\"ב 2022", "q": "ציינו שתי תקופות בחיים שבהן מומלץ לצרוך סידן בכמות גבוהה ונמקו. ציינו שני גורמים הפוגעים בספיגת הסידן.", "ans": "<p>תקופות: גיל ההתבגרות (בניית עצם), הריון והנקה, גיל שלישי (מניעת אוסטיאופורוזיס).</p><p>פוגעים בספיגה: עודף נתרן/קפאין, מחסור בוויטמין D, צריכת אלכוהול.</p>"}, {"topics": ["min"], "ty": "open", "y": "תשפ\"ד 2024", "q": "ציינו שתי מערכות בגוף התלויות בסידן. מדוע תינוקות זקוקים לסידן רב, ומדוע גם בני 60+?", "ans": "<p>מערכות: שלד/עצמות, שרירים, עצבים, קרישת דם.</p><p>תינוקות — גדילת עצם מהירה. בני 60+ — ירידה בצפיפות העצם (מניעת אוסטיאופורוזיס).</p>"}, {"topics": ["min"], "ty": "open", "y": "תשע\"ז 2017", "q": "ציינו שני תפקידים של הסידן. איזה ויטמין מסייע בספיגתו, ואילו שתי מחלות נגרמות ממחסור?", "ans": "<p>תפקידים: בניית עצם ושן, התכווצות שריר.</p><p>הוויטמין: D. מחלות מחסור: רככת (ילדים), אוסטיאופורוזיס/אוסטיאומלציה.</p>"}, {"topics": ["min"], "ty": "open", "y": "תשפ\"ג 2023", "q": "ציינו שלושה מינרלים החיוניים לגוף ומקור טבעי לכל אחד.", "ans": "<p>סידן — מוצרי חלב; ברזל — בשר אדום/קטניות; אשלגן — בננה; מגנזיום — אגוזים.</p>"}, {"topics": ["min"], "ty": "open", "y": "תשפ\"ה 2025", "q": "באילו תאים נמצא רוב הברזל בגוף, ומהו תפקידו? מדוע מחסור בברזל גורם לחולשה?", "ans": "<p>רוב הברזל בתאי הדם האדומים (בהמוגלובין). תפקידו: הובלת חמצן.</p><p>מחסור → פחות חמצן לרקמות → חולשה ועייפות (אנמיה).</p>"}, {"topics": ["min"], "ty": "mc", "y": "תשפ\"ד 2024", "q": "באיזה מזון יש את כמות הסידן הגבוהה ביותר?", "mc": [{"t": "עוף", "correct": false}, {"t": "סרדינים", "correct": true}, {"t": "אורז", "correct": false}, {"t": "תפוח", "correct": false}]}, {"topics": ["min"], "ty": "mc", "y": "תשפ\"ד 2024", "q": "איזה מינרל אינו פוגע בספיגת הסידן?", "mc": [{"t": "נתרן", "correct": false}, {"t": "ברזל", "correct": true}, {"t": "קפאין", "correct": false}, {"t": "אבץ", "correct": false}]}, {"topics": ["min"], "ty": "mc", "y": "תשפ\"ד 2024", "q": "באיזה מזון יש את כמות הברזל הגבוהה ביותר?", "mc": [{"t": "חלב", "correct": false}, {"t": "תפוח", "correct": false}, {"t": "לחם לבן", "correct": false}, {"t": "סטייק", "correct": true}]}, {"topics": ["min"], "ty": "mc", "y": "תשפ\"ד 2024", "q": "אדם עם רמת המוגלובין נמוכה — מה הסיבה הסבירה?", "mc": [{"t": "בעיה בספיגת ברזל", "correct": true}, {"t": "עודף סידן", "correct": false}, {"t": "עודף ויטמין C", "correct": false}, {"t": "מחסור בשומן", "correct": false}]}, {"topics": ["min"], "ty": "mc", "y": "תשפ\"ג 2023", "q": "על צריכת איזה מינרל יש להקפיד בתפריט לגיל השלישי?", "mc": [{"t": "נתרן", "correct": false}, {"t": "ברזל", "correct": false}, {"t": "סידן", "correct": true}, {"t": "אשלגן", "correct": false}]}, {"topics": ["min", "water"], "ty": "mc", "y": "תשפ\"ה 2025", "q": "מדוע הזיעה מלוחה?", "mc": [{"t": "היא מכילה מינרלים (מלחים)", "correct": true}, {"t": "בגלל הסוכר", "correct": false}, {"t": "בגלל החלבונים", "correct": false}, {"t": "בגלל השומן", "correct": false}]}, {"topics": ["min"], "ty": "open", "y": "תשפ\"ד 2024 · תשע\"ז 2017", "q": "איזה מינרל מתאמנים צריכים בכמות מוגברת ומדוע? איזה מינרל חסר גורם ל\"היתפסות\" שרירים?", "ans": "<p>מתאמנים מאבדים בהזעה נתרן/אשלגן (אלקטרוליטים) — חשובים לתפקוד שרירים ולמאזן נוזלים. ברזל חשוב להובלת חמצן.</p><p>\"היתפסות\" שרירים נגרמת ממחסור ב<b>מגנזיום</b> (התכווצות/הרפיית שריר).</p>"}, {"topics": ["min"], "ty": "term", "y": "תשע\"ז 2017", "q": "הסבירו את המונח: אנמיה", "ans": "<p>מחסור בברזל הגורם לירידה בהמוגלובין ולירידה בהובלת החמצן — מתבטא בעייפות וחולשה.</p>"}, {"topics": ["water"], "ty": "open", "y": "תשע\"ח 2018 · תשפ\"ב 2022", "q": "הסבירו כיצד נשמר מאזן המים בגוף (קליטה ופליטה). ציינו ארבעה סימנים למחסור במים.", "ans": "<p>קליטה: שתייה, מזון, מים מטבוליים. פליטה: שתן, זיעה, נשימה, צואה.</p><p>סימני מחסור: צמא, יובש בפה, שתן כהה/מועט, עייפות, כאב ראש, סחרחורת.</p>"}, {"topics": ["water"], "ty": "open", "y": "תשפ\"ג 2023", "q": "ציינו שלוש פעילויות שבהן הגוף מאבד מים ושתי דרכי קליטה. מדוע חשוב מאזן מים תקין?", "ans": "<p>איבוד: הזעה, שתן, נשימה, צואה. קליטה: שתייה, מזון.</p><p>מאזן תקין חיוני להעברת חומרים, ויסות חום, סילוק פסולת ותפקוד התאים.</p>"}, {"topics": ["water"], "ty": "open", "y": "תשע\"ז 2017", "q": "ציינו שלושה תפקידים של המים בגוף ושלושה מצבים שבהם נדרשת שתייה מוגברת.", "ans": "<p>תפקידים: ממס וסביבת תגובות, ויסות חום, הובלת חומרים וסילוק פסולת.</p><p>שתייה מוגברת: חום/קיץ, פעילות גופנית, מחלה/חום/שלשול.</p>"}, {"topics": ["water"], "ty": "open", "y": "תשפ\"ה 2025", "q": "ציינו שלושה תפקידים של המים. האם אתגר שתיית 5 ליטר מים בדקה מסוכן? נמקו.", "ans": "<p>תפקידים: ויסות חום, הובלת חומרים, סילוק פסולת.</p><p>כן — מסוכן. עלול לגרום ל<b>היפונתרמיה</b> (דילול נתרן בדם), בצקת מוחית ואף מוות (\"הרעלת מים\").</p>"}, {"topics": ["water"], "ty": "open", "y": "תשפ\"ד 2024", "q": "מדוע אחוז המים שונה בין גבר לאישה באותו משקל? ציינו שני תנאים לצריכת מים מוגברת.", "ans": "<p>לגבר בד\"כ יותר מסת שריר (השריר עתיר מים), ולאישה יותר רקמת שומן (דלת מים) — ולכן אחוז המים בגבר גבוה יותר.</p><p>צריכה מוגברת: חום, פעילות גופנית, הנקה.</p>"}, {"topics": ["water"], "ty": "open", "y": "תשפ\"ו 2026", "q": "ציינו שלושה תסמינים של התייבשות ושתי סכנות מהתייבשות ממושכת. האם המים הם חומר אורגני או אי-אורגני?", "ans": "<p>תסמינים: צמא, יובש בפה, שתן כהה, סחרחורת.</p><p>סכנות: כשל כלייתי, הלם, פגיעה בתפקוד המוח.</p><p>מים = חומר <b>אי-אורגני</b>.</p>"}, {"topics": ["water"], "ty": "mc", "y": "תשע\"ח 2018", "q": "איזה היגד על מים אינו נכון?", "mc": [{"t": "שתיית מים בזמן ארוחה מזיקה לבריאות", "correct": true}, {"t": "המים מסייעים בוויסות חום", "correct": false}, {"t": "המים מובילים חומרים", "correct": false}, {"t": "המים מסלקים פסולת", "correct": false}]}, {"topics": ["water"], "ty": "mc", "y": "תשפ\"ה 2025", "q": "לאיזה אדם אחוז המים הגבוה ביותר בגוף?", "mc": [{"t": "צעיר בעל מסת שריר גבוהה", "correct": true}, {"t": "קשיש", "correct": false}, {"t": "אדם עם אחוז שומן גבוה", "correct": false}, {"t": "תינוק שמן", "correct": false}]}, {"topics": ["water"], "ty": "mc", "y": "תשפ\"ה 2025", "q": "איזה תהליך גורם לאיבוד נוזלים?", "mc": [{"t": "אכילה", "correct": false}, {"t": "נשימה", "correct": true}, {"t": "שינה", "correct": false}, {"t": "קריאה", "correct": false}]}, {"topics": ["digest"], "ty": "open", "y": "תשפ\"ה 2025", "q": "מערכת העיכול (לפי איור) — באיזה איבר מתבצע עיכול מכני וכימי של חלבון? היכן מתחיל העיכול המכני? היכן ריכוז החיידקים המייצרים B12? היכן נספגים המזון והמים?", "ans": "<p>עיכול חלבון (מכני+כימי): ה<b>קיבה</b>. עיכול מכני מתחיל ב<b>פה</b>.</p><p>חיידקי B12: ב<b>מעי הגס</b>. ספיגה: המזון ב<b>מעי הדק</b>, המים ב<b>מעי הגס</b>.</p>"}, {"topics": ["digest"], "ty": "mc", "y": "תשע\"ח 2018 · תשפ\"ב 2022", "q": "היכן מתרחש עיכול מכני של המזון?", "mc": [{"t": "רק בפה", "correct": false}, {"t": "רק בקיבה", "correct": false}, {"t": "רק במעי", "correct": false}, {"t": "בפה, בקיבה, במעי הדק ובמעי הגס", "correct": true}]}, {"topics": ["digest"], "ty": "mc", "y": "תשפ\"ג 2023", "q": "היכן מתבצע פירוק מכני של המזון?", "mc": [{"t": "בקיבה", "correct": false}, {"t": "בחלל הפה", "correct": true}, {"t": "במעי הדק", "correct": false}, {"t": "בכבד", "correct": false}]}, {"topics": ["digest", "carbs"], "ty": "mc", "y": "תשפ\"א 2021", "q": "איזה רכיב תזונתי מתחיל להתפרק כבר בפה?", "mc": [{"t": "פחמימות", "correct": true}, {"t": "חלבונים", "correct": false}, {"t": "שומנים", "correct": false}, {"t": "ויטמינים", "correct": false}]}, {"topics": ["intro"], "ty": "open", "y": "תשע\"ז 2017", "q": "פירמידת המזון — מדוע הקומה השישית (ממתקים) מופרדת משאר הקומות? ציינו שני מסרים נוספים שאפשר ללמוד מהפירמידה.", "ans": "<p>הקומה השישית מופרדת כי מומלץ למעט בה מאוד (ממתקים/חטיפים).</p><p>מסרים: ככל שהקומה רחבה יותר — צורכים ממנה יותר; חשיבות גיוון המזון ושתיית מים.</p>"}, {"topics": ["intro"], "ty": "open", "y": "תשע\"ט 2019", "q": "מדוע מבנה ההמלצות התזונתיות הוא בצורת פירמידה? תארו את סדר הקומות.", "ans": "<p>הפירמידה רחבה בבסיס (מזון שיש לצרוך הרבה) וצרה בקודקוד (למעט).</p><p>קומות (מלמטה): מים → דגנים → ירקות ופירות → חלבונים → שומנים → ממתקים.</p>"}, {"topics": ["intro"], "ty": "open", "y": "תשפ\"ו 2026", "q": "אבות המזון — מיינו מזונות (חלבון/שומן/פחמימה). הסבירו מהו חלבון מלא, ציינו שני מזונות צמחיים שמשלימים לחלבון מלא, ושני מזונות המכילים ויטמין D.", "ans": "<p>עתיר חלבון: חזה עוף, טונה. עתיר שומן: אבוקדו, טחינה. עתיר פחמימה: אורז מלא, חומוס.</p><p>חלבון מלא = כל חומצות האמינו החיוניות. צמחיים משלימים: חומוס + טחינה. ויטמין D: טונה (דגים).</p>"}, {"topics": ["intro"], "ty": "open", "y": "תשע\"ח 2018", "q": "תווית מזון — אם כתוב \"ללא תוספת סוכר\", האם המוצר נטול סוכרים לחלוטין? נמקו. מהו המרכיב המקנה ערך קלורי גבוה וכמה קלוריות ל-100 גרם?", "ans": "<p>לא בהכרח — ייתכנו סוכרים טבעיים (כמו בפירות/רכז).</p><p>המרכיב: פחמימות (78 ג') → כ-312 קלוריות (78×4).</p>"}, {"topics": ["intro"], "ty": "open", "y": "תשע\"ט 2019", "q": "תווית קורנפלקס — האם חולה צליאק יכול לצרוך אותו? אילו מרכיבים תורמים לערך הקלורי?", "ans": "<p>לא — הקורנפלקס מכיל שעורה (גלוטן), האסורה לחולי צליאק.</p><p>תורמים לקלוריות: פחמימות, חלבונים ושומנים.</p>"}, {"topics": ["intro"], "ty": "mc", "y": "תשע\"ח 2018", "q": "מה אפשר ללמוד מפירמידת המזון?", "mc": [{"t": "רק על ויטמינים", "correct": false}, {"t": "על הכמות היחסית שיש לצרוך מכל קבוצת מזון", "correct": true}, {"t": "על מחירי המזון", "correct": false}, {"t": "על קלוריות בלבד", "correct": false}]}, {"topics": ["intro"], "ty": "mc", "y": "תשע\"ח 2018", "q": "מהו תפריט מאוזן?", "mc": [{"t": "תפריט המכיל את כל אבות המזון וסיבים, לפי צורכי הגוף", "correct": true}, {"t": "תפריט ללא שומן", "correct": false}, {"t": "תפריט עם פחמימות בלבד", "correct": false}, {"t": "תפריט דל קלוריות", "correct": false}]}, {"topics": ["intro"], "ty": "mc", "y": "תש\"ף 2020", "q": "מה מומלץ לגבי מזון בקודקוד הפירמידה?", "mc": [{"t": "לצרוך הרבה", "correct": false}, {"t": "לצמצם את צריכתו", "correct": true}, {"t": "לצרוך בכל ארוחה", "correct": false}, {"t": "להימנע לחלוטין", "correct": false}]}, {"topics": ["intro"], "ty": "mc", "y": "תש\"ף 2020", "q": "כמה קלוריות מספקות 60 גרם פחמימות?", "mc": [{"t": "120", "correct": false}, {"t": "180", "correct": false}, {"t": "240", "correct": true}, {"t": "540", "correct": false}]}, {"topics": ["intro"], "ty": "mc", "y": "תש\"ף 2020 · תשפ\"ב 2022 · תשפ\"ג 2023", "q": "מה ניתן ללמוד מסדר הופעת המרכיבים בתווית מזון?", "mc": [{"t": "לפי סדר אלפביתי", "correct": false}, {"t": "לפי הערך התזונתי", "correct": false}, {"t": "לפי הכמות, מהגדול לקטן", "correct": true}, {"t": "לפי המחיר", "correct": false}]}, {"topics": ["sport", "carbs"], "ty": "open", "y": "תשפ\"ה 2025 · תשע\"ח 2018", "q": "מדוע מומלץ לצרוך פחמימות פשוטות לפני/בזמן אימון ופחמימות מורכבות אחריו?", "ans": "<p>פשוטות לפני/בזמן = אנרגיה זמינה ומהירה לשרירים. מורכבות אחרי = מילוי מאגרי הגליקוגן לטווח ארוך.</p><p>דוגמאות: פשוטות — תמר/בננה/משקה ספורט; מורכבות — אורז מלא/פסטה.</p>"}, {"topics": ["sport"], "ty": "open", "y": "תשפ\"א 2021 · תשע\"ז 2017", "q": "מדוע ספורטאים זקוקים לחלבונים? מהי חשיבות המים והברזל עבורם?", "ans": "<p>חלבונים — שיקום ובניית שריר. מים — ויסות חום ומניעת התייבשות. ברזל — הובלת חמצן לשרירים.</p>"}, {"topics": ["sport"], "ty": "open", "y": "תשפ\"ד 2024", "q": "ציינו שתי סיבות לכך שפעילות גופנית מורידה שומן במהירות. איזה מינרל חסר גורם ל\"היתפסות\" שרירים?", "ans": "<p>הפעילות מגבירה את חילוף החומרים ושריפת הקלוריות, ובונה שריר (שצורך יותר אנרגיה).</p><p>המינרל: <b>מגנזיום</b>.</p>"}, {"topics": ["sport", "energy"], "ty": "open", "y": "תשפ\"ו 2026", "q": "מדוע נוצרת חומצה לקטית בשרירים בפעילות אירובית אינטנסיבית? מדוע הצטברותה נחשבת ל\"מנגנון הגנה\"?", "ans": "<p>במאמץ אינטנסיבי אין מספיק חמצן, ולכן הגוף מפיק אנרגיה בנשימה אל-אווירנית שתוצרהּ חומצה לקטית.</p><p>\"מנגנון הגנה\" — הצטברותה גורמת לתחושת עייפות/כאב המאלצת לעצור לפני נזק לשריר.</p>"}, {"topics": ["sport"], "ty": "mc", "y": "תשע\"ט 2019", "q": "מהו הגורם החיוני להפקת אנרגיה בפעילות אירובית?", "mc": [{"t": "סוכר", "correct": false}, {"t": "חלבון", "correct": false}, {"t": "חמצן", "correct": true}, {"t": "מים", "correct": false}]}, {"topics": ["energy"], "ty": "open", "y": "תשע\"ז 2017 · תשפ\"ב 2022", "q": "ציינו שלוש פעילויות פיזיולוגיות שהגוף מבצע במנוחה. מדוע בגיל ההתבגרות צריכת האנרגיה גבוהה מבגיל השלישי?", "ans": "<p>במנוחה: נשימה, פעימות לב, שמירת חום, פעילות מוח וכליות.</p><p>בהתבגרות הצריכה גבוהה בשל גדילה והתפתחות ופעילות גופנית רבה.</p>"}, {"topics": ["energy", "carbs", "fat"], "ty": "open", "y": "תשפ\"ה 2025", "q": "ציינו שני מקורות אנרגיה בפעילות גופנית והשוו ביניהם בערך הקלורי ובקצב השחרור.", "ans": "<p>פחמימות (4 קלוריות לגרם, שחרור מהיר) ושומנים (9 קלוריות לגרם, שחרור איטי).</p>"}, {"topics": ["energy"], "ty": "open", "y": "תשפ\"ו 2026", "q": "הסבירו מהו קצב חילוף החומרים הבסיסי (BMR). כיצד תשפיע עלייה במסת השריר עליו? ציינו שלושה גורמים המשפיעים עליו.", "ans": "<p>BMR = כמות האנרגיה הדרושה לתפקודי הבסיס של הגוף במנוחה.</p><p>עלייה במסת שריר → BMR גבוה יותר (שריר צורך יותר אנרגיה).</p><p>גורמים: גיל, מין, מסת שריר, גובה/משקל.</p>"}, {"topics": ["energy"], "ty": "open", "y": "תשפ\"ה 2025", "q": "אילו שני פרמטרים משמשים לחישוב מדד BMI? האם ילד ומבוגר יכולים לקבל ערך BMI זהה?", "ans": "<p>משקל וגובה (BMI = משקל ÷ גובה²).</p><p>אצל ילדים משווים את הערך לעקומות גיל — לכן אותו ערך מספרי מתפרש אחרת בילד ובמבוגר.</p>"}, {"topics": ["energy"], "ty": "mc", "y": "תשפ\"א 2021", "q": "אילו גורמים משפיעים על קצב חילוף החומרים הבסיסי?", "mc": [{"t": "צבע העיניים", "correct": false}, {"t": "גיל, מגדר ויחס שריר/שומן", "correct": true}, {"t": "צבע השיער", "correct": false}, {"t": "מספר הארוחות בלבד", "correct": false}]}, {"topics": ["life"], "ty": "open", "y": "תשפ\"א 2021", "q": "היריון — ציינו שלושה מזונות/משקאות שיש להמעיט בהם בהיריון ומדוע. מדוע אישה מיניקה זקוקה לתזונה מאוזנת?", "ans": "<p>להמעיט: אלכוהול (פגיעה בעובר), קפאין, דגים נאים/בשר נא (חיידקים).</p><p>חלב האם תלוי בתזונת האם ומספק לתינוק את כל צרכיו.</p>"}, {"topics": ["life"], "ty": "open", "y": "תשפ\"ו 2026", "q": "ציינו שתי סכנות לעובר מצריכת אלכוהול בהיריון. מדוע אסור לאישה הרה לאכול דגים נאים, ולמיניקה מותר? מהי חשיבות הסידן לתינוק?", "ans": "<p>אלכוהול: פגיעה בהתפתחות המוח, מומים מולדים (תסמונת FAS).</p><p>דגים נאים אסורים בהיריון בשל חיידקים/כספית המסכנים את העובר; בהנקה הסיכון לתינוק נמוך.</p><p>סידן — חיוני לבניית עצם מהירה אצל התינוק.</p>"}, {"topics": ["life"], "ty": "open", "y": "תשפ\"ה 2025", "q": "תזונה בגיל הינקות — ציינו שתי סיבות לחשיפה הדרגתית למזונות חדשים. מהי חשיבות הסידן והברזל לתינוק?", "ans": "<p>חשיפה הדרגתית: זיהוי אלרגיות והתרגלות מערכת העיכול.</p><p>סידן — בניית עצם ושן; ברזל — ייצור דם וגדילה תקינה.</p>"}, {"topics": ["life"], "ty": "open", "y": "תשפ\"ד 2024 · תשפ\"ו 2026", "q": "גיל שלישי — ציינו שני שינויים גופניים ושני שינויים חברתיים המשפיעים על התזונה. מדוע עלול להיווצר מחסור ב-B12 גם בצריכה מספקת?", "ans": "<p>גופניים: ירידה בחוש טעם/ריח, בעיות שיניים, ירידה בתיאבון ובספיגה. חברתיים: בדידות, ירידה בהכנסה.</p><p>מחסור B12 — עם הגיל יורדת יכולת הספיגה של B12 במעי, גם אם צורכים אותו.</p>"}, {"topics": ["life"], "ty": "open", "y": "תשפ\"א 2021 · תשפ\"ג 2023 · תש\"ף 2020", "q": "צמחונות וטבעונות — הסבירו את ההבדל ביניהן, על מה יש להקפיד תזונתית, ומהו יתרון ומהו חיסרון.", "ans": "<p>צמחונות — ללא בשר ודגים (מתירה ביצים/חלב). טבעונות — ללא כל מוצר מן החי.</p><p>להקפיד: חלבון מלא (קטנייה+דגן), ברזל, סידן, ויטמין B12.</p><p>יתרון: פחות שומן רווי; חיסרון: סיכון למחסור ב-B12/ברזל.</p>"}, {"topics": ["life"], "ty": "open", "y": "תש\"ף 2020 · תשפ\"ב 2022 · תשפ\"ו 2026", "q": "רגישויות ואלרגיות — ציינו שלושה רכיבים אלרגניים ומזונות המכילים אותם. מהו ההבדל בין רגישות ללקטוז לאלרגיה לחלבון החלב? מדוע יוגורט נסבל יותר?", "ans": "<p>אלרגנים: בוטנים, אגוזים, ביצים, חלב, גלוטן, שומשום.</p><p><b>רגישות ללקטוז</b> = חוסר באנזים לקטאז (אי-נוחות עיכולית). <b>אלרגיה לחלבון חלב</b> = תגובה חיסונית מסוכנת (עד אנפילקסיס).</p><p>ביוגורט הלקטוז כבר מפורק חלקית ע\"י חיידקי המחמצת — ולכן נסבל יותר.</p>"}, {"topics": ["life"], "ty": "open", "y": "תשע\"ח 2018", "q": "גלוטן — ציינו את שם המחלה הקשורה לרגישות לגלוטן ושניים מתסמיניה. ציינו שלושה סוגי קמח שמותר לחולה לצרוך.", "ans": "<p>המחלה: <b>צליאק</b>. תסמינים: שלשול/כאבי בטן, ירידה במשקל, תת-ספיגה, עייפות.</p><p>קמחים מותרים: אורז, תירס, תפוח אדמה, כוסמת, קינואה.</p>"}, {"topics": ["life"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "מהו המאפיין המרכזי של אנורקסיה נרבוזה?", "mc": [{"t": "אכילה מופרזת + הקאות", "correct": false}, {"t": "בולמוסי אכילה + הקאות", "correct": false}, {"t": "הימנעות מבולמוסים", "correct": false}, {"t": "הימנעות קיצונית מצריכת מזון", "correct": true}]}, {"topics": ["life"], "ty": "mc", "y": "תשפ\"ו 2026", "q": "מהו אחד הגורמים לבולמוסי רעב בגיל ההתבגרות גם ללא הפרעת אכילה?", "mc": [{"t": "שינויים נוירולוגיים", "correct": false}, {"t": "שינויים הורמונליים", "correct": true}, {"t": "מחסור בפחמימות", "correct": false}, {"t": "מחסור בוויטמינים", "correct": false}]}, {"topics": ["life"], "ty": "mc", "y": "תשפ\"א 2021", "q": "איזו ארוחה מתאימה לתזונה קטוגנית (עתירת שומן ודלת פחמימה)?", "mc": [{"t": "סטייק אנטריקוט עם שעועית ירוקה", "correct": true}, {"t": "פסטה ברוטב עגבניות", "correct": false}, {"t": "אורז עם ירקות", "correct": false}, {"t": "כריך עם ריבה", "correct": false}]}, {"topics": ["life"], "ty": "mc", "y": "תשפ\"ג 2023", "q": "איזה מזון אסור לאישה הרה לצרוך?", "mc": [{"t": "תפוח", "correct": false}, {"t": "אורז", "correct": false}, {"t": "סושי עם דג טרי", "correct": true}, {"t": "גזר", "correct": false}]}, {"topics": ["life"], "ty": "mc", "y": "תשפ\"א 2021", "q": "על מה מומלץ להקפיד בתזונת הגיל השלישי (לשמירת צפיפות העצם)?", "mc": [{"t": "ויטמין A, ויטמין D וסידן", "correct": true}, {"t": "סוכר פשוט", "correct": false}, {"t": "שומן רווי", "correct": false}, {"t": "קפאין", "correct": false}]}, {"topics": ["life"], "ty": "term", "y": "תשע\"ז 2017", "q": "הסבירו את המונח: צליאק (כרסת)", "ans": "<p>מחלה אוטואימונית של רגישות לגלוטן (חלבון בחיטה/שעורה/שיפון), הפוגעת במעי ובספיגת המזון.</p>"}];
+
+const CH = [
+{id:'intro',emoji:'🍽️',title:'התזונה בחיינו (מבוא)',html:`
+<div class="sec"><h3>1. איך הגענו עד לכאן? (האבולוציה של המזון)</h3>
+<p><b>העבר הרחוק:</b> במשך מיליוני שנים, בני האדם חיו כ"לקטים-ציידים". המזון היה קשה להשגה, והאדם זז הרבה כדי למצוא אותו.</p>
+<p><b>שלוש המהפכות:</b> עם השנים קרו שלוש מהפכות ששינו את התזונה שלנו: <b>המהפכה החקלאית</b> (האדם התחיל לגדל צמחים וחיות), <b>המהפכה התעשייתית</b> (הוספת סוכר, מלח ושומן למזון), ו<b>מהפכת המזון המהיר</b> (מזון זול, תעשייתי ומלא ב"קלוריות ריקות").</p>
+<p><b>הבעיה היום:</b> הגוף שלנו עדיין "חושב" שחסר מזון ואוגר אנרגיה כשומן, אבל בפועל יש לנו שפע של אוכל ואנחנו זזים פחות. הפער הזה בין הגוף שלנו לסביבה המודרנית הוא הסיבה העיקרית למגפת ההשמנה ולמחלות כרוניות.</p></div>
+
+<div class="sec"><h3>2. תזונה מאוזנת מול לא מאוזנת ⚖️</h3>
+<p>כדי לחיות, הגוף שלנו חייב לקבל מים ואת כל אבות המזון: חלבונים, פחמימות, שומנים, ויטמינים, מינרלים (ראשי תיבות: <b>פ"ח שו"ם</b>).</p>
+<ul><li><b>תזונה מאוזנת:</b> אכילת כל אבות המזון בכמות הנכונה לגוף.</li>
+<li><b>תזונה לא מאוזנת - השמנת יתר:</b> כאשר אוכלים יותר ממה שהגוף צריך. עודף האנרגיה הופך לשומן. ארגון הבריאות העולמי הגדיר את ההשמנה כ"מגפה", והיא מסכנת חיים.</li>
+<li><b>תזונה לא מאוזנת - תת-תזונה:</b> מצב שבו חסר לגוף רכיב מזון אחד או יותר (בדרך כלל במדינות עניות, או עקב הפרעות אכילה במדינות עשירות). חוסר זה עלול לפגוע בהתפתחות, להחליש את מערכת החיסון ולגרום למחלות.</li></ul></div>
+
+<div class="sec"><h3>3. הקצובה היומית המומלצת 📋</h3>
+<p>טבלאות ממשלתיות שמראות בדיוק כמה רכיבי תזונה (ויטמינים, מינרלים, חלבונים) כל אדם צריך לאכול ביום, בהתאם לגיל ולמין שלו.</p>
+<p><b>החיסרון:</b> הטבלאות האלו מסובכות מדי, עמוסות בפרטים, ולכן קשה מאוד לאדם הרגיל להשתמש בהן בחיי היומיום.</p></div>
+
+<div class="sec"><h3>4. פירמידת המזון הישראלית 🔺</h3>
+<p>בגלל שהטבלאות היו מסובכות, המציאו את פירמידת המזון. זהו ציור פשוט שמראה לנו מה לאכול וכמה כדי להיות בריאים. <b>הכלל:</b> ככל שעולים בפירמידה, צריך לאכול פחות.</p>
+<ul><li><b>בסיס הפירמידה ורקע:</b> הקפדה על שתיית מים מרובה ופעילות גופנית.</li>
+<li><b>קומה 2 (פחמימות):</b> דגנים ומוצרי מאפה (עדיף מחיטה מלאה).</li>
+<li><b>קומה 3 (ירקות ופירות):</b> מספקים ויטמינים, מינרלים וסיבים. מומלץ לאכול יותר ירקות מפירות.</li>
+<li><b>קומה 4 (חלבונים):</b> מוצרי בשר, דגים, חלב, ביצים וקטניות.</li>
+<li><b>קומה 5 (שומנים):</b> שמן, טחינה, אבוקדו, אגוזים. לאכול במידה.</li>
+<li><b>קומה 6 בראש הפירמידה (ממתקים):</b> חטיפים ושתייה מתוקה. מכילים "קלוריות ריקות" (משמינים בלי שום יתרון בריאותי). לא חובה לאכול מהם כלל ועדיף לצמצם.</li></ul></div>
+
+<div class="sec"><h3>5. תווית מזון – "תעודת הזהות" של המוצר 🏷️</h3>
+<p>לפי חוק, כל יצרן מזון חייב לפרסם על האריזה מידע ברור.</p>
+<ul><li><b>רשימת רכיבים:</b> הרכיבים רשומים לפי הכמות שלהם – מהרכיב שיש ממנו הכי הרבה במוצר, ועד לרכיב שיש ממנו הכי מעט. כאן נמצא גם את "תוספי המזון" (כמו חומרי טעם וצבעי מאכל שמוספים עם האות E).</li>
+<li><b>סימון תזונתי:</b> טבלה שמראה כמה קלוריות, חלבונים, פחמימות, שומנים ונתרן (מלח) יש ב-100 גרם או 100 מ"ל של המוצר.</li></ul>
+<div class="tip"><span>על תעלולי שיווק: מותר לכתוב על שמן צמחי "ללא כולסטרול", אבל זה סתם גימיק! כולסטרול נוצר רק בבעלי חיים, ולכן בצמחים אף פעם אין כולסטרול בכל מקרה.</span></div></div>
+
+<div class="sec"><h3>6. חוק סימון מוצרים ("אפשרי בריא") 🔴🟢</h3>
+<p>כדי לעזור לנו לבחור נכון בקלות, משרד הבריאות יצר רפורמה.</p>
+<ul><li><b>מדבקה אדומה:</b> מזהירה שהמוצר מכיל יותר מדי סוכר, מלח (נתרן) או שומן רווי.</li>
+<li><b>מדבקה ירוקה:</b> מסמנת מזון שעומד בדרישות של תזונה בריאה.</li></ul></div>
+`},
+{id:'digest',emoji:'🦷',title:'מערכת העיכול - המסע המופלא של המזון',html:`
+<div class="sec"><h3>1. ממה מורכב המזון שלנו? (אורגני מול אי-אורגני) 🧱</h3>
+<p>כל החומרים בטבע, במזון ובגוף שלנו מתחלקים לשתי קבוצות:</p>
+<ul><li><b>חומר אורגני:</b> חומר שמכיל אטומי פחמן ומימן שמחוברים זה לזה. אבות המזון האורגניים הם: פחמימות, חלבונים, שומנים וויטמינים.</li>
+<li><b>חומר אי-אורגני:</b> חומר שלא מכיל קשרים של פחמן ומימן. אבות המזון האי-אורגניים הם: מינרלים ומים.</li></ul></div>
+
+<div class="sec"><h3>2. שני סוגים של פירוק מזון ⚙️🧪</h3>
+<p>כדי שהמזון ייכנס לתוך הדם והתאים, הוא חייב להתפרק לחתיכות זעירות. הפירוק קורה בשתי דרכים:</p>
+<ul><li><b>פירוק מכני (פיזי) 🔨:</b> חיתוך, טחינה ומעיכה של המזון לחתיכות קטנות יותר. זה לא משנה את החומר עצמו, אלא רק מגדיל את "שטח הפנים" שלו כדי שיהיה קל יותר לעכל אותו.</li>
+<li><b>פירוק כימי 🧪:</b> פירוק של הקשרים הכימיים בתוך המזון עצמו. הפירוק הזה נעשה בעזרת <span class="term">אנזימים</span> (ה"פועלים" של הגוף שמזרזים תהליכי פירוק).</li></ul></div>
+
+<div class="sec"><h3>3. התחנות של מערכת העיכול 🗺️</h3>
+<p>מערכת העיכול היא כמו צינור אחד ארוך שמתחיל בפה ומסתיים בפי הטבעת.</p>
+<ul><li><b>👄 פה:</b> התחנה הראשונה. כאן קורה פירוק מכני (לעיסה בעזרת השיניים והלשון) וגם פירוק כימי (הרוק מכיל אנזים בשם <span class="term">עמילאז</span> שמתחיל לפרק את הפחמימות).</li>
+<li><b>🛝 ושט:</b> צינור שרירי שרק דוחף את המזון למטה אל הקיבה. לא קורה כאן שום עיכול.</li>
+<li><b>🥩 קיבה:</b> איבר דמוי שק עם נוזל חומצי מאוד. כאן קורה פירוק מכני (שרירי הקיבה לָשִים את המזון) וגם פירוק כימי (האנזים <span class="term">פפסין</span> מתחיל לפרק חלבונים). החומצה החזקה גם משמידה חיידקים מזיקים. (שימו לב: פחמימות לא מתעכלות בקיבה!)</li>
+<li><b>🍝 מעי דק:</b> צינור ארוך מאוד (6-8 מטרים!). כאן מסתיים הפירוק הכימי של כל אבות המזון. למעי הדק יש המון בליטות קטנות שנקראות <span class="term">סיסים</span> (מוריגים). הסיסים מגדילים מאוד את שטח הפנים, ודרכם המזון המפורק נספג אל תוך זרם הדם.</li>
+<li><b>💩 מעי גס:</b> צינור קצר ורחב יותר שמקבל את שאריות המזון שלא נספגו. התפקיד שלו הוא לספוג בחזרה מים ומלחים אל הגוף. במעי הגס חיים חיידקים טובים שמייצרים עבורנו ויטמינים (כמו ויטמין K). מה שנשאר יוצא החוצה כצואה.</li></ul></div>
+
+<div class="sec"><h3>4. העוזרים מבחוץ (בלוטות העיכול) 🩸🍃</h3>
+<p>אלו איברים שהמזון לא עובר בתוכם, אבל הם מייצרים מיצים שעוזרים לעיכול במעי הדק:</p>
+<ul><li><b>הכבד וכיס המרה:</b> הכבד מייצר את מיץ המרה (שנאגר בכיס המרה). מיץ המרה פועל כמו סבון (דטרגנט / תחליב) - הוא מפרק טיפות שומן גדולות לטיפות מיקרוסקופיות. רק ככה האנזימים יכולים לגשת לשומן ולפרק אותו.</li>
+<li><b>הלבלב:</b> בלוטה שמפרישה למעי הדק אנזימים שמפרקים חלבונים, פחמימות ושומנים. בנוסף, הלבלב מייצר הורמונים חשובים כמו אינסולין.</li></ul></div>
+
+<div class="sec"><h3>5. התחנה הסופית - התא 🔬</h3>
+<ul><li>התא הוא יחידת המבנה הבסיסית של כל יצור חי.</li>
+<li>אחרי שהמזון נספג לדם במעי הדק, הוא מגיע דרך הכבד אל כל תאי הגוף.</li>
+<li>בתאים, המזון משמש כחומר בניין לגוף ולצורך תהליך שנקרא "נשימה תאית", שבו התא משתמש בגלוקוז ובחמצן כדי להפיק אנרגיה.</li></ul></div>
+`},
+{id:'carbs',emoji:'🍞',title:'פחמימות - ספק האנרגיה של הגוף',html:`
+<div class="sec"><h3>1. תעודת זהות לפחמימות 🪪</h3>
+<ul><li><b>מקור השם:</b> פחמן + מים.</li>
+<li><b>ערך קלורי:</b> 4 קלוריות (קק"ל) לכל גרם.</li>
+<li><b>איפה הן נאגרות?</b> פחמימות שאנחנו אוכלים ולא מנצלים מיד לאנרגיה נאגרות בכבד ובשרירים בצורה של "גליקוגן", והרוב הגדול הופך לשומן ונאגר ברקמת השומן.</li></ul></div>
+
+<div class="sec"><h3>2. תפקידי הפחמימות בגוף 🔋</h3>
+<ul><li><b>הדלק של הגוף:</b> התפקיד המרכזי ביותר הוא לספק אנרגיה (דלק) לכל התאים החיים.</li>
+<li><b>מרכיבות את ה-DNA:</b> סוגים מסוימים של סוכרים (ריבוז ודיאוקסיריבוז) בונים את החומר התורשתי שלנו.</li>
+<li><b>תעודת זהות תאית:</b> פחמימות נמצאות על קרומי התאים ועוזרות למערכת החיסון לזהות אילו תאים שייכים לגוף ואילו זרים.</li>
+<li><b>ניקוי מערכת העיכול:</b> הסיבים התזונתיים (שהם סוג של פחמימה) מנקים את המעיים.</li></ul></div>
+
+<div class="sec"><h3>3. מאיפה הפחמימות מגיעות ואיך מפיקים מהן אנרגיה? ☀️</h3>
+<ul><li><b>פוטוסינתזה בצמחים:</b> מקור הפחמימות הוא בצומח. הצמח לוקח מים, פחמן דו-חמצני ואור שמש, ויוצר גלוקוז (סוכר) וחמצן.</li>
+<li><b>נשימה תאית בגופנו:</b> כשאנחנו אוכלים פחמימות, התאים שלנו עושים את התהליך ההפוך. בעזרת חמצן, התא מפרק את הגלוקוז ומפיק ממנו מולקולות בשם <span class="term">ATP</span> (אלו הם "מטבעות האנרגיה" של הגוף שמשמשים אותנו לכל פעולה).</li></ul></div>
+
+<div class="sec"><h3>4. מיון הפחמימות: פשוטות מול מורכבות 🍭🥔</h3>
+<p><b>פחמימות פשוטות (סוכרים):</b></p>
+<ul><li><b>חד-סוכרים (יחידה אחת):</b> גלוקוז (סוכר הדם), פרוקטוז (סוכר פירות) וגלקטוז (במוצרי חלב).</li>
+<li><b>דו-סוכרים (שתי יחידות):</b> סוכרוז (הסוכר הלבן הרגיל), לקטוז (סוכר החלב) ומלטוז.</li>
+<li><b>מאפיינים:</b> מתוקות, נמסות במים, מתעכלות ונספגות במהירות לדם. הן מספקות אנרגיה מהירה אבל נחשבות ל"קלוריות ריקות" כי אין בהן ערך תזונתי נוסף. צריכת יתר שלהן מעמיסה על הכבד וגורמת להשמנה.</li></ul>
+<p><b>פחמימות מורכבות (רב-סוכרים):</b></p>
+<ul><li>בנויות משרשראות ארוכות של המון יחידות סוכר מחוברות.</li>
+<li><b>חומרי תשמורת:</b> עמילן (חומר התשמורת של הצמחים) וגליקוגן (חומר התשמורת בגוף בעלי חיים והאדם).</li>
+<li><b>מאפיינים:</b> טעמן תפל (לא מתוק), לא נמסות במים, מתעכלות ונספגות לאט ולכן נותנות תחושת שובע ואנרגיה לטווח ארוך.</li></ul></div>
+
+<div class="sec"><h3>5. סיבים תזונתיים - המנקים של הגוף 🌾</h3>
+<p>סיבים הם פחמימות מורכבות שמקורן בצומח, אך לגוף שלנו אין את האנזימים לפרק אותם, ולכן אין בהם קלוריות.</p>
+<ul><li><b>סיבים לא מסיסים במים</b> (כמו סובין ותאית): מתפקדים כמו מטאטא במעיים. הם מונעים עצירות, מזרזים את פעילות מערכת העיכול ומקטינים סיכון לסרטן המעי הגס.</li>
+<li><b>סיבים מסיסים במים</b> (כמו פקטין): סופחים אליהם נוזלים והופכים לג'ל דביק. הם סופחים אליהם כולסטרול וסוכרים ומוציאים אותם מהגוף, ובכך עוזרים למנוע מחלות לב וסוכרת.</li></ul>
+<div class="tip"><span>יותר מדי סיבים עלולים להפריע לספיגת מינרלים כמו ברזל וסידן.</span></div></div>
+
+<div class="sec"><h3>6. תחנות העיכול של הפחמימות 👄</h3>
+<ul><li>תהליך פירוק הפחמימות מתחיל כבר בפה, בעזרת אנזים בשם "עמילאז" שמפרק את העמילן.</li>
+<li>בקיבה אין עיכול כימי של פחמימות.</li>
+<li>עיקר הפירוק והספיגה קורים במעי הדק. שם הפחמימות מתפרקות לחד-סוכרים, נספגות לזרם הדם ועוברות לכבד ולתאים לשם ייצור אנרגיה.</li></ul></div>
+
+<div class="sec"><h3>7. המדד הגליקמי 📈</h3>
+<p>מדד שבודק כמה מהר פחמימה מעלה את רמת הגלוקוז (הסוכר) בדם.</p>
+<ul><li><b>מדד גליקמי גבוה:</b> הסוכר קופץ מהר ובתגובה הלבלב מפריש המון אינסולין. הסוכר צונח בחזרה מהר ואנחנו שוב מרגישים רעבים. מצב זה תורם להשמנה ולא מומלץ לחולי סוכרת.</li>
+<li><b>מדד גליקמי נמוך:</b> הסוכר עולה בהדרגה ולאט, מה שנותן אנרגיה ושובע לאורך זמן (מאוד מומלץ!).</li></ul>
+<div class="tip"><span>חימום ובישול של עמילנים (כמו פירה תפוחי אדמה) גורם להם להתפרק מהר יותר, ולכן מעלה להם את המדד הגליקמי.</span></div></div>
+
+<div class="sec"><h3>8. מחלות הקשורות לפחמימות: סוכרת 🩸</h3>
+<p>סוכרת היא מחלה מטבולית שבה יש ריכוז גבוה של גלוקוז בדם כי הגוף מתקשה להכניס אותו לתאים.</p>
+<ul><li><b>סוכרת סוג 1 (נעורים):</b> מחלה שבה מערכת החיסון "מתבלבלת" ותוקפת והורסת את התאים בלבלב שמייצרים את הורמון האינסולין. החולה חייב לקבל אינסולין ממקור חיצוני (זריקות).</li>
+<li><b>סוכרת סוג 2:</b> קשורה לרוב להשמנה. הלבלב מייצר אינסולין, אבל התאים בגוף מפתחים "תנגודת" ולא מגיבים אליו. כתוצאה מכך הגלוקוז נשאר בדם ולא נכנס לתאים.</li></ul></div>
+`},
+{id:'protein',emoji:'🥚',title:'חלבונים - אבני הבניין של הגוף',html:`
+<div class="sec"><h3>1. תעודת זהות לחלבונים 🪪</h3>
+<ul><li><b>מה זה חלבון?</b> שרשרת ארוכה שבנויה מיחידות קטנות הנקראות <span class="term">חומצות אמינו</span> (כמו חרוזים שמרכיבים שרשרת).</li>
+<li><b>ערך קלורי:</b> 4 קלוריות לכל גרם של חלבון.</li>
+<li><b>כמה חומצות אמינו יש?</b> החלבונים בגוף שלנו מורכבים מ-20 סוגים של חומצות אמינו.</li>
+<li><b>חומצות אמינו חיוניות (9 סוגים):</b> חומצות שהגוף שלנו לא יודע לייצר בעצמו, ולכן חובה לאכול אותן במזון.</li>
+<li><b>חומצות אמינו לא חיוניות (11 סוגים):</b> חומצות שהגוף יודע לייצר בעצמו.</li></ul></div>
+
+<div class="sec"><h3>2. מה תפקיד החלבונים בגוף? 🏗️</h3>
+<p>החלבונים מתחלקים לשתי קבוצות עיקריות:</p>
+<ul><li><b>חלבונים מבניים (בונים את הגוף):</b> בונים את כל התאים והרקמות בגוף. למשל: "קולגן" שבונה את העור והעצמות, או "קרטין" שבונה את השיער והציפורניים.</li>
+<li><b>חלבונים תפקודיים (עושים פעולות):</b> חלבונים שמבצעים משימות. למשל: אנזימים (מזרזים תהליכים כמו עיכול), נוגדנים (שומרים עלינו במערכת החיסון), והורמונים (כמו אינסולין).</li>
+<li><b>מקור אנרגיה לשעת חירום:</b> אם הגוף לא מקבל מספיק פחמימות, הוא יתחיל לפרק שרירים (חלבונים) כדי לקבל אנרגיה. זה לא בריא! פירוק חלבונים לאנרגיה מעמיס על הכליות.</li></ul></div>
+
+<div class="sec"><h3>3. איך נוצרים כל כך הרבה חלבונים שונים? 🔠</h3>
+<p>יש בגוף שלנו כ-100,000 סוגים שונים של חלבונים. ההבדל בין חלבון אחד לאחר נובע מ-3 דברים (כמו שמילים שונות מורכבות מאותיות שונות):</p>
+<ul><li>המספר של חומצות האמינו בשרשרת.</li>
+<li>הסוג של חומצות האמינו.</li>
+<li>הסדר שבו הן מחוברות.</li></ul>
+<p>הוראות ההפעלה לבניית החלבונים נמצאות ב-DNA שלנו, שבתוך גרעין התא.</p></div>
+
+<div class="sec"><h3>4. מאיפה מקבלים חלבון? (איכות החלבון) 🥩🌱</h3>
+<ul><li><b>חלבון מן החי = "חלבון מלא":</b> נמצא בבשר, דגים, עוף, ביצים ומוצרי חלב. הוא נקרא מלא כי יש בו את כל חומצות האמינו החיוניות. (לביצה יש "ערך ביולוגי" 100 - כלומר זה החלבון המושלם לגוף).</li>
+<li><b>חלבון מן הצומח = "חלבון חסר":</b> נמצא בצמחים (כמו עדשים וחיטה). הוא נקרא חסר כי לרוב חסרה בו חומצת אמינו חיונית אחת או יותר (חומצה זו נקראת "חומצת אמינו מגבילה").</li>
+<li><b>השלמה הדדית 🤝:</b> טבעונים שלא אוכלים מהחי, יכולים לשלב שני סוגים של צמחים (דגן + קטנית) שביחד משלימים אחד את השני ונותנים לגוף חלבון מלא. למשל: אורז עם עדשים (מג'דרה), או פיתה עם חומוס/פלאפל.</li></ul></div>
+
+<div class="sec"><h3>5. עיכול חלבונים ו"דנטורציה" 🍳</h3>
+<p><b>תחנות העיכול:</b> פירוק החלבונים מתחיל בקיבה (בעזרת החומצה ואנזים בשם "פפסין") ומסתיים במעי הדק. החלבונים מתפרקים לחומצות אמינו ונספגים לדם.</p>
+<div class="bagrut"><span>דנטורציה (הרס המבנה המרחבי): כשמחממים חלבון (כמו בטיגון חביתה) או כשמוסיפים לו חומצה (כמו חלב שמחמיץ), החלבון מאבד את הצורה הטבעית שלו ולא יכול לבצע את תפקידו. למרות שהצורה נהרסה, הערך התזונתי לא נפגע והגוף עדיין יכול לנצל את חומצות האמינו!</span></div></div>
+
+<div class="sec"><h3>6. מחלות קשורות לחלבונים: צליאק (דגנת) 🌾</h3>
+<ul><li>צליאק היא מחלה שבה יש רגישות לחלבון בשם גלוטן (שנמצא בחיטה, שעורה ושיפון).</li>
+<li>כשחולה צליאק אוכל גלוטן, מערכת החיסון שלו תוקפת בטעות את המעי הדק ופוגעת בספיגת המזון.</li>
+<li>הטיפול היחיד הוא הימנעות מוחלטת מאכילת מאכלים עם גלוטן.</li></ul></div>
+
+<div class="sec"><h3>מדד איכות החלבון: ערך ביולוגי 💯</h3>
+<ul><li><b>מה זה ערך ביולוגי?</b> זהו מדד (כמו ציון בטווח של 0 עד 100) שמדרג ובודק את האיכות של החלבון במזון שאנחנו אוכלים.</li>
+<li><b>איך קובעים את הציון?</b> הציון נקבע לפי סוג וכמות חומצות האמינו החיוניות שמרכיבות את אותו חלבון.</li>
+<li><b>חלבון ביצה (התלמיד המצטיין) 🥚:</b> מקבל את הציון המושלם - ערך ביולוגי 100! הוא נחשב לחלבון המאוזן והטוב ביותר לצורכי הגוף, ושאר החלבונים במזונות אחרים מקבלים את הציונים שלהם ביחס לביצה.</li>
+<li><b>ציונים נוספים לדוגמה:</b> לדג יש ערך ביולוגי של 70, לחלב פרה ציון 60, ולקטניות (שמקורן בצומח) יש ערך נמוך שנע בין 34 ל-44 בקירוב.</li></ul>
+<div class="bagrut"><span>חלבון מן החי תמיד ייחשב לבעל ערך ביולוגי גבוה יותר בהשוואה לחלבון מן הצומח.</span></div></div>
+`},
+{id:'fat',emoji:'🥑',title:'שומנים (ליפידים) - מאגר האנרגיה והבידוד',html:`
+<div class="sec"><h3>1. תעודת זהות לשומנים 🪪</h3>
+<ul><li><b>שם מדעי:</b> קבוצת השומנים והשמנים נקראת <span class="term">ליפידים</span>. התכונה המשותפת לכולם היא שהם אינם מסיסים במים (הידרופוביים).</li>
+<li><b>ערך קלורי:</b> 9 קלוריות לכל גרם שומן (הכי הרבה מבין אבות המזון).</li>
+<li><b>שמן מול שומן:</b> שמן הוא נוזל בטמפרטורת החדר (לרוב מהצומח), ושומן הוא מוצק בטמפרטורת החדר (לרוב מהחי).</li></ul></div>
+
+<div class="sec"><h3>2. תפקידי השומנים בגוף 🛡️</h3>
+<ul><li><b>מקור אנרגיה:</b> משמשים כמאגר אנרגיה לשעת חירום (נאגרים ברקמת השומן).</li>
+<li><b>בניית תאים:</b> מרכיבים את קרומי התאים בכל הגוף.</li>
+<li><b>הגנה ובידוד:</b> מגנים על איברים פנימיים מפני מכות, ומבודדים את הגוף מקור.</li>
+<li><b>ספיגת ויטמינים:</b> עוזרים לגוף לספוג ויטמינים שמסיסים בשומן (A, D, E, K).</li></ul></div>
+
+<div class="sec"><h3>3. אילו סוגי שומנים יש בגוף? (3 קבוצות) 🔬</h3>
+<ul><li><b>טריגליצרידים:</b> זוהי הצורה שבה השומן נאגר בגופנו ובמזון. מורכבים מראש של "גליצרול" שאליו מחוברות 3 "חומצות שומן".</li>
+<li><b>פוספוליפידים:</b> בונים את קרומי התאים. יש להם "ראש" שאוהב מים (הידרופילי) ו"זנב" ששונא מים (הידרופובי), מה שמאפשר לתא לשלוט במה שנכנס ויוצא ממנו.</li>
+<li><b>כולסטרול:</b> חומר שומני שמיוצר רק בבעלי חיים (אין כולסטרול בצמחים!). הוא חיוני לבניית הורמונים (כמו טסטוסטרון ואסטרוגן) ולוויטמין D.
+<ul><li><b>כולסטרול רע (LDL):</b> מוביל כולסטרול לתאים, אך עלול לשקוע ולסתום את כלי הדם (טרשת עורקים).</li>
+<li><b>כולסטרול טוב (HDL):</b> מפנה את הכולסטרול העודף מהתאים בחזרה לכבד.</li></ul></li></ul></div>
+
+<div class="sec"><h3>4. חומצות שומן - אבני הבניין של השומן 🧱</h3>
+<ul><li><b>חומצות שומן רוויות:</b> "מלאות" באטומי מימן. הן מוצקות (שומן), נמצאות בעיקר בבשר, חמאה וגבינות שמנות. אכילה מרובה שלהן לא מומלצת כי הן סותמות את כלי הדם.</li>
+<li><b>חומצות שומן בלתי רוויות:</b> "חסר" להן מימן ויש בהן קשרים כפולים שיוצרים "כיפוף". הן נוזליות (שמן), נמצאות בצמחים (שמן זית, אבוקדו) ובדגים. נחשבות לשומן בריא וידידותי ללב.</li></ul></div>
+
+<div class="sec"><h3>5. שומן טראנס - הרשע של תעשיית המזון 🍟</h3>
+<ul><li><b>איך הוא נוצר?</b> בתהליך תעשייתי (הידרוגנציה) שבו לוקחים שמן צמחי נוזלי והופכים אותו למוצק (כמו מרגרינה).</li>
+<li><b>למה הוא מסוכן?</b> הגוף לא יודע איך לפרק אותו. הוא מעלה את הכולסטרול הרע (LDL) ומוריד את הטוב (HDL). נמצא במאפים, בצק עלים, חטיפים ואוכל מטוגן. מומלץ להימנע ממנו לחלוטין!</li></ul></div>
+
+<div class="sec"><h3>6. איך אנחנו מעכלים שומן? 🧼</h3>
+<p>בגלל ששומן ומים לא מתערבבים, מערכת העיכול נעזרת במיץ המרה (שמיוצר בכבד). מיץ המרה פועל כמו סבון (דטרגנט) - הוא מפרק את השומן לטיפות מיקרוסקופיות (תחליב), וכך האנזימים יכולים לגשת אליו, לפרק אותו, ולעזור לו להיספג בדם.</p></div>
+`},
+{id:'vit',emoji:'🍊',title:'ויטמינים - שומרי הראש של הגוף',html:`
+<div class="sec"><h3>1. תעודת זהות לוויטמינים 🪪</h3>
+<ul><li><b>מה הם?</b> חומרים אורגניים חסרי קלוריות. הגוף זקוק להם בכמויות זעירות (קטנות מאוד) כדי לגדול, לתפקד ולהפיק אנרגיה.</li>
+<li><b>מאיפה מקבלים אותם?</b> הגוף שלנו לא יודע לייצר אותם בעצמו, ולכן חובה לקבל אותם מבחוץ דרך המזון.</li>
+<li><b>היוצאים מן הכלל:</b> ויטמין D (נוצר בעור בעזרת השמש) וויטמינים שמיוצרים על ידי החיידקים הטובים במעיים שלנו (כמו ויטמין K וכמה מוויטמיני B).</li></ul></div>
+
+<div class="sec"><h3>2. שתי משפחות של ויטמינים 💧🥑</h3>
+<p>הוויטמינים מתחלקים ל-2 קבוצות לפי החומר שבו הם נמסים:</p>
+<ul><li><b>ויטמינים מסיסים בשמן (A, D, E, K):</b> נספגים טוב יותר כשאוכלים אותם עם שומן. הם נאגרים בגוף (בעיקר בכבד וברקמות השומן) לימי מחסור. לכן, צריכה מוגזמת שלהם מסוכנת ועלולה לגרום להרעלה.</li>
+<li><b>ויטמינים מסיסים במים (C וקבוצת B):</b> נעים בדם בקלות. הם לא נאגרים בגוף (חוץ מ-B12), והעודפים שלהם יוצאים החוצה בשתן. לכן, חובה לאכול אותם כל יום וקשה מאוד להגיע להרעלה מהם. הם גם רגישים ונהרסים בבישול ובחום.</li></ul></div>
+
+<div class="sec"><h3>3. הכוכבים המסיסים בשומן (A, D, E, K) 🧈</h3>
+<ul><li><b>👁️ ויטמין A (רטינול):</b> אחראי על הראייה בחושך, גדילה ומערכת החיסון. חוסר גורם לעיוורון לילה. נמצא בחי (כבד, ביצים) ובצומח בצורה של בטא-קרוטן (צבע כתום/צהוב כמו בגזר) שהגוף הופך לוויטמין A.</li>
+<li><b>☀️ ויטמין D:</b> "ויטמין השמש". מכניס את הסידן לעצמות. חוסר גורם למחלת הרככת בילדים (עצמות חלשות ומתעקמות) ואוסטאופורוזיס (בריחת סידן) במבוגרים.</li>
+<li><b>🛡️ ויטמין E:</b> נוגד חמצון חזק. שומר על קרומי התאים שלנו מפני נזקים של "רדיקלים חופשיים" (חומרים שתוקפים והורסים תאים בגוף).</li>
+<li><b>🩸 ויטמין K:</b> אחראי על קרישת הדם (עוצר דימומים פנימיים). נוצר בעיקר על ידי חיידקי המעי שלנו, ונמצא גם בעלים ירוקים.</li></ul></div>
+
+<div class="sec"><h3>4. הכוכבים המסיסים במים (קבוצת B ו-C) 🚰</h3>
+<ul><li><b>🍊 ויטמין C:</b> נוגד חמצון ששומר על מערכת החיסון, בונה את הקולגן שבעור ועוזר לגוף לספוג ברזל. חוסר חמור גורם למחלת הצפדינה (דימומים ונשירת שיניים שאפיינה מלחים בעבר). נמצא בפירות הדר, עגבניות וקיווי, ונהרס מאוד בקלות בחום ובישול.</li>
+<li><b>⚡ קבוצת ויטמיני B (קומפלקס B):</b> שמונה ויטמינים שעוזרים להפיק אנרגיה מהמזון. החשובים שבהם לבגרות:
+<ul><li><b>B1 (תיאמין):</b> חשוב למערכת העצבים. חוסר בו גורם למחלת הברי-ברי (זה הוויטמין שהיה חסר בתמ"ל ב"פרשת רמדיה" וגרם לפגיעה בתינוקות).</li>
+<li><b>B3 (ניאצין):</b> חוסר חמור גורם למחלת הפלגרה (בעיות בעור ובמערכת העיכול).</li>
+<li><b>B9 (חומצה פולית):</b> קריטי לנשים לפני ובזמן היריון. מונע מומים מולדים קשים במוח ובעמוד השדרה של העובר.</li>
+<li><b>B12:</b> בונה את ה-DNA וכדוריות הדם האדומות. חשוב מאוד: נמצא אך ורק במזון מן החי (בשר, ביצים, חלב)! טבעונים חייבים לקחת אותו כתוסף. חוסר גורם לאנמיה ממארת ולנזק למערכת העצבים.</li></ul></li></ul></div>
+`},
+{id:'min',emoji:'🧂',title:'מינרלים - יסודות החיים מהטבע',html:`
+<div class="sec"><h3>1. תעודת זהות למינרלים 🪪</h3>
+<ul><li><b>מה הם?</b> בשונה מהוויטמינים והפחמימות שהם חומרים אורגניים, המינרלים הם חומרים אי-אורגניים (אינם מכילים קשרי פחמן-מימן).</li>
+<li><b>ערך קלורי:</b> המינרלים אינם מספקים קלוריות כלל.</li>
+<li><b>מאיפה הם מגיעים?</b> מקורם בסלעים שבקליפת כדור הארץ. הסלעים מתפוררים למים ולאדמה, הצמחים שואבים אותם, ובעלי החיים אוכלים את הצמחים. כך אנחנו מקבלים אותם מהמים, מהצומח ומהחי.</li>
+<li><b>עיכול:</b> המינרלים נספגים במעי הדק, אך הם אינם מתעכלים ואינם משתנים בגוף שלנו.</li></ul></div>
+
+<div class="sec"><h3>2. שתי משפחות של מינרלים ⚖️</h3>
+<p>המינרלים מתחלקים ל-2 קבוצות לפי הכמות שלהם בגוף:</p>
+<ul><li><b>מאקרו-מינרלים (הגדולים):</b> מינרלים שהגוף צריך בכמות גדולה (מעל 100 מ"ג ביום). הם מהווים כ-4% ממשקל הגוף. דוגמאות: סידן, זרחן, נתרן ומגנזיום.</li>
+<li><b>מיקרו-מינרלים / קורט (הקטנים):</b> מינרלים שהגוף צריך בכמות זעירה (פחות מ-100 מ"ג ביום). למרות הכמות הקטנה, הם קריטיים לחיים! דוגמאות: ברזל, אבץ, פלואור ויוד.</li></ul></div>
+
+<div class="sec"><h3>3. הכוכבים הגדולים (מאקרו-מינרלים) 🌟</h3>
+<ul><li><b>🦴 סידן (Ca):</b> המינרל הכי נפוץ בגוף. 99% ממנו נמצא בעצמות ובשיניים. הוא חיוני לבניית השלד ולכיווץ שרירים. חוסר בסידן גורם למחלת הרככת בילדים (עצמות מתעקמות) ואוסטאופורוזיס (בריחת סידן) במבוגרים. כדי שהסידן ייספג היטב במעי, הגוף חייב ויטמין D.</li>
+<li><b>🧂 נתרן (Na):</b> נמצא בעיקר במלח בישול ובמזון מעובד. תפקידו לווסת את כמות הנוזלים ולחץ הדם בגוף. חוסר יוביל להתייבשות וירידת לחץ דם, אך עודף (שנפוץ מאוד היום) גורם ליציאת מים מהתאים, עלייה בלחץ הדם ובצקות.</li>
+<li><b>🧬 זרחן (P):</b> המינרל השני הכי נפוץ. הוא בונה את ה-DNA ומרכיב את "מטבעות האנרגיה" של הגוף (ATP). יחד עם הסידן, הוא בונה את העצמות.</li>
+<li><b>🥬 מגנזיום (Mg):</b> מרפה שרירים ושומר על קצב לב יציב. חוסר במגנזיום גורם להתכווצויות שרירים כואבות. הוא נמצא בעלים ירוקים (בתוך הכלורופיל) ובמי הברז שלנו.</li></ul>
+<div class="bagrut"><span>התפלת מי ים בישראל מוציאה מהמים את המגנזיום, מה שעלול לגרום לחוסר באוכלוסייה.</span></div></div>
+
+<div class="sec"><h3>4. קטנים אבל חזקים (מיקרו-מינרלים) 🔬</h3>
+<ul><li><b>🩸 ברזל (Fe):</b> התפקיד העיקרי שלו הוא לקשור את החמצן בתוך תאי הדם האדומים (בהמוגלובין) ולהוביל אותו לכל הגוף. חוסר בברזל גורם לאנמיה, שמתבטאת בחולשה, עייפות, חיוורון ודופק מואץ. ברזל מהחי נספג הכי טוב, ומומלץ לאכול אותו יחד עם ויטמין C שעוזר לספיגה.</li>
+<li><b>🌱 אבץ (Zn):</b> קריטי לתהליך חלוקת התאים. חוסר באבץ פוגע בגדילה, בהתפתחות המינית של מתבגרים ובפוריות.</li>
+<li><b>🦷 פלואור (F):</b> מגן על זגוגית השן (אמייל) ומונע חורים בשיניים (עששת). נמצא במשחות שיניים ובחלק ממי השתייה. עודף ממנו יגרום לכתמים על השיניים (פלואורוזיס).</li>
+<li><b>🐟 יוד (I):</b> חיוני לפעילות בלוטת התריס שאחראית על חילוף החומרים והגדילה. חוסר ביוד גורם לנפיחות בצוואר (זפקת) ובזמן היריון עלול לגרום לפיגור שכלי בעובר. נמצא בעיקר בדגי ים ואצות.</li></ul></div>
+`},
+{id:'water',emoji:'💧',title:'משק המים - נוזל החיים',html:`
+<div class="sec"><h3>1. תעודת זהות למים 🪪</h3>
+<ul><li><b>מה הם?</b> המים הם חומר אי-אורגני (אינם מכילים פחמן ומימן יחד).</li>
+<li><b>ערך קלורי:</b> 0 קלוריות (אינם מספקים אנרגיה).</li>
+<li><b>חשיבות:</b> החומר החשוב ביותר בגוף אחרי חמצן. אפשר לחיות שבועות בלי אוכל, אבל רק ימים ספורים בלי מים.</li></ul></div>
+
+<div class="sec"><h3>2. מה תפקיד המים בגוף שלנו? 🛠️</h3>
+<p>כל התהליכים בגופנו מתרחשים בסביבה מימית. תפקידי המים הם:</p>
+<ul><li>ממיסים את רוב החומרים בגוף.</li>
+<li>מובילים חומרי מזון וחמצן לתאים, ומסלקים פסולת דרך הדם.</li>
+<li>שומרים ומווסתים את טמפרטורת הגוף.</li>
+<li>מלחלחים (מרטיבים) איברים שונים כמו הפה, העיניים, העור והמפרקים.</li></ul></div>
+
+<div class="sec"><h3>3. כמה מים יש לנו בגוף? (ומה הקשר לשרירים?) ⚖️</h3>
+<p>המים מרכיבים כ-60% עד 70% ממשקל גופנו (אצל תינוקות אפילו 80%!).</p>
+<div class="bagrut"><span>שריר מכיל המון מים, ושומן מכיל מעט מאוד מים. לכן: גברים מול נשים - לגברים יש יותר מים בגוף כי יש להם בממוצע יותר מסת שריר מנשים. הגיל השלישי - כשמזדקנים מאבדים מסת שריר, ולכן כמות המים בגוף יורדת. ספורטאים - פעילות גופנית בונה שריר, ולכן מגדילה את כמות המים בגוף.</span></div></div>
+
+<div class="sec"><h3>4. איפה המים נמצאים בגוף? (שני "מדורים") 🗺️</h3>
+<ul><li><b>מדור תוך-תאי:</b> רוב המים בגוף (בערך שני שלישים) נמצאים בתוך התאים שלנו.</li>
+<li><b>מדור חוץ-תאי:</b> שאר המים (בערך שליש) נמצאים מחוץ לתאים, בעיקר בזרם הדם (פלזמה), בנוזל שבין התאים, ובמפרקים.</li></ul></div>
+
+<div class="sec"><h3>5. מאזן המים בגוף 🚰🚽</h3>
+<p>כדי שנהיה בריאים, כמות המים שנכנסת לגוף חייבת להיות שווה לכמות שיוצאת.</p>
+<ul><li><b>איך מים נכנסים?</b> דרך שתייה, דרך אוכל, וגם "מים מטבוליים" שהגוף מייצר בעצמו בתאים.</li>
+<li><b>איך מים יוצאים?</b> דרך השתן (מהכליות), דרך הזיעה (מהעור), דרך הנשימה (מהריאות) ודרך הצואה.</li>
+<li><b>מי שולט בזה?</b> המוח שולט בהכנסה בעזרת יצירת תחושת צמא, והכליות שולטות בהוצאה על ידי קביעת כמות השתן (בעזרת הורמון בשם <span class="term">וזופרסין</span> שמקטין את איבוד המים).</li></ul></div>
+
+<div class="sec"><h3>6. סכנה 1: התייבשות 🏜️</h3>
+<ul><li><b>למה זה קורה?</b> כשיוצאים מהגוף יותר נוזלים מאשר נכנסים, ולכן נפח הדם יורד.</li>
+<li><b>סימנים ראשונים:</b> כאב ראש, יובש בלשון, בלבול וסחרחורת.</li>
+<li><b>סכנה:</b> חוסר חמצן לאיברים חיוניים, אובדן הכרה ואפילו מוות.</li>
+<li><b>מה עושים?</b> מפסיקים כל מאמץ, מקררים את הגוף, ושותים נוזלים (עדיף מתוקים) בלגימות קטנות.</li></ul></div>
+
+<div class="sec"><h3>7. סכנה 2: הרעלת מים 🌊</h3>
+<ul><li><b>למה זה קורה?</b> מצב נדיר שקורה כששותים המון מים בזמן קצר מאוד.</li>
+<li><b>סכנה:</b> המים מדללים את ריכוז הנתרן בדם. כתוצאה מכך מים נכנסים לתוך התאים, מנפחים אותם ויוצרים בצקת. אם נוצרת בצקת במוח, זה עלול לגרום למוות.</li></ul></div>
+
+<div class="sec"><h3>8. אז כמה מים צריך לשתות? 🥤</h3>
+<ul><li>לרוב מומלץ לשתות כ-8 עד 12 כוסות ביום (בערך ליטר וחצי עד שניים).</li>
+<li><b>מתי צריך לשתות יותר?</b> בקיץ, בפעילות גופנית, בהיריון, וגם כשחולים (שלשולים, הקאות או חום).</li>
+<li><b>קבוצות בסיכון:</b> צריך לשים לב במיוחד לתינוקות (כי הם מאבדים מים מהר) ולקשישים (כי עם הגיל מאבדים לפעמים את תחושת הצמא ועלולים להתייבש בלי להרגיש).</li></ul></div>
+`},
+{id:'energy',emoji:'⚡',title:'אנרגיה ומאזן המשקל בגוף',html:`
+<div class="sec"><h3>1. מהי אנרגיה ומאיפה היא מגיעה? 🔋</h3>
+<ul><li><b>הגדרה:</b> אנרגיה היא היכולת של הגוף לבצע עבודה, והיא נמדדת ביחידות שנקראות קלוריות (קק"ל).</li>
+<li><b>כמה קלוריות יש במזון?</b> הגוף מפיק אנרגיה מפירוק של שלושה אבות מזון בלבד: פחמימות (4 קלוריות לגרם), חלבונים (4 קלוריות לגרם) ושומנים (9 קלוריות לגרם).</li>
+<li><b>מטבעות האנרגיה:</b> האנרגיה שמופקת בתאים (למשל מגלוקוז) נאגרת בתוך מולקולות שנקראות ATP – אלו הם ה"מטבעות" שהגוף משתמש בהם כדי לבצע פעולות. אנרגיה עודפת נשמרת כגליקוגן, ורובה נאגרת ברקמת השומן.</li></ul></div>
+
+<div class="sec"><h3>2. איך הגוף "מבזבז" אנרגיה? (ההוצאה האנרגטית הכללית - TEE) 💸</h3>
+<p>כלל האנרגיה שאנחנו שורפים ביממה מורכבת מ-3 חלקים:</p>
+<ul><li><b>א. קצב חילוף החומרים הבסיסי (BMR):</b> זהו הצרכן הגדול ביותר! הוא מהווה 60%-75% מכל הקלוריות שאנו שורפים ביום. זו האנרגיה שהגוף צורך במנוחה מוחלטת רק כדי לחיות (נשימה, פעילות הלב והמוח).</li>
+<li><b>ב. האפקט התרמי של המזון (TEF):</b> האנרגיה שהגוף מתאמץ ומשקיע כדי לעכל ולספוג את האוכל שאכלנו. זה מהווה כ-10% מההוצאה היומית. ארוחה עם הרבה חלבון תדרוש מהגוף יותר אנרגיה לעיכול.</li>
+<li><b>ג. פעילות גופנית (EEE):</b> האנרגיה שאנו שורפים כשאנחנו זזים (הליכה, ספורט, ניקיון). זה מהווה 15%-30% מההוצאה היומית, וזה החלק היחיד שיש לנו שליטה מלאה עליו.</li></ul>
+<div class="bagrut"><span>מה משפיע על ה-BMR: הרכב הגוף - שריר שורף המון אנרגיה גם במנוחה, בעוד שומן כמעט ולא, לכן ככל שיש יותר שריר ה-BMR גבוה יותר. מין - לגברים BMR גבוה יותר מנשים. גיל - בתקופת הגדילה ה-BMR גבוה, ומגיל 20 מסת השריר יורדת ואיתה ה-BMR. דיאטה - הגבלה קלורית גורמת לגוף "להיבהל" ולהיכנס למצב חיסכון, ולכן דיאטה מורידה את ה-BMR.</span></div></div>
+
+<div class="sec"><h3>3. משוואת מאזן האנרגיה ⚖️</h3>
+<p>המשקל שלנו נקבע לפי החשבון הפשוט של "כמה נכנס לעומת כמה יצא":</p>
+<ul><li><b>מאזן חיובי (משמינים):</b> מכניסים יותר קלוריות ממה שמוציאים. העודף הופך לשומן.</li>
+<li><b>מאזן שלילי (מרזים):</b> מוציאים יותר קלוריות ממה שמכניסים.</li>
+<li><b>מאזן אפס (שומרים על המשקל):</b> צריכת הקלוריות שווה בדיוק להוצאת הקלוריות.</li></ul></div>
+
+<div class="sec"><h3>4. מלכודת הדיאטות ⚠️</h3>
+<p>למה כל כך קשה לרדת במשקל רק בעזרת דיאטה? בגלל שהגוף חושב שחסר אוכל, הוא "מתייעל" ומוריד את קצב חילוף החומרים הבסיסי (BMR) כדי לחסוך באנרגיה. לכן, הדרך הנכונה והבריאה ביותר היא לשלב תזונה נכונה יחד עם פעילות גופנית. הספורט בונה את השריר, וכך מעלה בחזרה את ה-BMR שירד בגלל הדיאטה.</p></div>
+`},
+{id:'pregnancy',emoji:'🤰',title:'היריון והנקה',html:`
+<div class="sec"><h3>1. משקל ואנרגיה בזמן היריון ⚖️</h3>
+<ul><li><b>עלייה במשקל היא טבעית וחובה:</b> הגוף מוסיף משקל בגלל העובר, השליה, מי השפיר, העלייה בנפח הדם ומאגרי שומן שהגוף מכין מראש. אישה במשקל תקין אמורה לעלות בממוצע 11-16 ק"ג.</li>
+<li><b>סכנות במשקל לא תקין:</b> היריון בעודף משקל מסוכן ועלול לגרום לסוכרת, רעלת היריון וצורך בניתוח קיסרי בגלל עובר גדול. היריון בתת-משקל מעלה סיכון ללידה מוקדמת ותינוק קטן מדי.</li>
+<li><b>כמה לאכול? (לא אוכלים בשביל שניים!):</b> אין צורך להכפיל את כמות האוכל. החל מהשליש השני (שבוע 13) מומלץ להוסיף רק כ-300 קלוריות ביום.</li></ul></div>
+
+<div class="sec"><h3>2. הכוכבים של ההיריון - רכיבי תזונה שחייבים להגדיל ⭐</h3>
+<p>בזמן ההיריון, הדרישה לויטמינים ומינרלים עולה משמעותית:</p>
+<ul><li><b>💊 חומצה פולית (ויטמין B9):</b> קריטית ביותר! חובה לקחת כבר לפני ההיריון ובשלושת החודשים הראשונים. היא מונעת מומים מולדים קשים מאוד במוח ובעמוד השדרה של העובר (מומים בתעלה העצבית).</li>
+<li><b>🩸 ברזל:</b> נפח הדם של האם עולה והעובר לוקח ברזל לעצמו. מחסור יגרום לאם לאנמיה (עייפות, חולשה). לרוב מקבלים תוסף ברזל מהשבוע ה-13.</li>
+<li><b>🦴 סידן:</b> חשוב במיוחד בשליש האחרון כדי לבנות את השלד של התינוק.</li></ul>
+<div class="bagrut"><span>אם האם לא תאכל מספיק סידן, העובר "ייקח" את הסידן מהעצמות שלה, מה שעלול לגרום לה למחלת דילול עצם (אוסטאופורוזיס) בעתיד.</span></div></div>
+
+<div class="sec"><h3>3. "רשימת השחורים" - ממה חובה להימנע? 🚫</h3>
+<p>מערכת החיסון של האישה ההרה חלשה יותר, ולכן יש סכנה גדולה מזיהומים במזון:</p>
+<ul><li><b>אסור לאכול מזון חי (לא מבושל):</b> בשר נא (קרפצ'יו), דגים נאים (סושי), וביצים חיות (ביצת עין, מוס רך) – סכנה לחיידקי סלמונלה, אי-קולי וטפילים.</li>
+<li><b>אסור מוצרי חלב לא מפוסטרים:</b> וגבינות עובש (כמו קממבר ורוקפור), בגלל סכנה לחיידק הליסטריה שעלול לגרום להפלה.</li>
+<li><b>🍷 אלכוהול (איסור מוחלט!):</b> האלכוהול עובר ישר לעובר וגורם ל"תסמונת אלכוהול עוברית" (FAS) – פגמים פיזיים ושכליים חמורים ובלתי הפיכים. אין כמות בטוחה של אלכוהול בהיריון.</li>
+<li><b>☕ קפאין:</b> מומלץ להפחית, כי העובר מתקשה לפרק אותו.</li></ul></div>
+
+<div class="sec"><h3>4. תקופת ההנקה 🍼</h3>
+<ul><li><b>הקולוסטרום:</b> זהו החלב של הימים הראשונים לאחר הלידה. צבעו צהבהב והוא מלא בנוגדנים שנועדו להגן על התינוק שנולד עם מערכת חיסון חלשה.</li>
+<li><b>פרולקטין:</b> ההורמון שאחראי על ייצור החלב. הוא גורם לאם לתחושת רעב ומעכב את הביוץ.</li>
+<li><b>תזונת האם המניקה:</b> גם אם האם תאכל ג'אנק פוד, חלב האם יהיה מצוין עבור התינוק. למה? כי הגוף "לוקח" את מה שחסר מהמאגרים של האם (ולכן האם היא זו שתיפגע אם לא תאכל נכון).</li>
+<li><b>אנרגיה ושתייה:</b> אישה מניקה שורפת הרבה קלוריות! היא צריכה תוספת של 300-500 קלוריות ביום ושתייה מרובה של כ-3 ליטרים מים ביום כדי לייצר חלב. חומרים כמו אלכוהול, ניקוטין ותרופות עוברים לחלב, ולכן יש להימנע מהם.</li></ul></div>
+`},
+{id:'childhood',emoji:'🧒',title:'תזונה בינקות, ילדות ונעורים',html:`
+<div class="sec"><h3>1. תזונה בינקות (מלידה עד גיל שנה) 🍼</h3>
+<p>שנת החיים הראשונה מתאפיינת בגדילה המהירה ביותר בחיים.</p>
+<ul><li><b>חלב אם או תמ"ל:</b> חלב אם הוא המזון המומלץ ביותר, מכיוון שהוא מכיל את כל רכיבי התזונה והנוגדנים שהתינוק צריך. אם לא מניקים, משתמשים בתמ"ל (תרכובת מזון לתינוקות) המותאם לצרכי התינוק.</li>
+<li><b>מעבר למוצקים:</b> סביב גיל חצי שנה מתחילים לחשוף את התינוק ל"טעימות" של מזון מוצק. חשיפה למזונות בגיל זה חשובה כדי למנוע התפתחות של אלרגיות בעתיד ולהכיר לתינוק מרקמים וטעמים.</li>
+<li><b>בדיקות ותוספים:</b> בימים הראשונים עושים לתינוק בדיקת דם לאיתור מחלות מטבוליות גנטיות (כמו PKU - פנילקטונוריה, שדורשת תזונה מיוחדת ללא פנילאלנין). בנוסף, מגיל 4 חודשים נותנים לתינוקות תוספת ברזל כדי למנוע אנמיה ופגיעה בהתפתחות.</li></ul></div>
+
+<div class="sec"><h3>2. תזונה בילדות (גיל שנה עד 10) 👧</h3>
+<ul><li><b>קצב הגדילה:</b> בשלב זה קצב הגדילה מאט יחסית לשנת החיים הראשונה.</li>
+<li><b>ארוחת בוקר:</b> סופר חשובה! אחרי צום הלילה, הגוף מרוקן מאנרגיה. ארוחת הבוקר היא ה"דלק" שמסייע לריכוז בלימודים, לערנות ולשמירה על משקל תקין.</li>
+<li><b>שינה:</b> חובה להקפיד על שעות שינה מספקות, כי בזמן השינה מופרש הורמון הגדילה, שאחראי על בניית שרירים ועצמות וצמיחה לגובה.</li></ul></div>
+
+<div class="sec"><h3>3. תזונה בנעורים (גיל ההתבגרות) 🧑</h3>
+<p>תקופה סוערת שבה יש "בולמוסי רעב" בגלל גדילה מואצת.</p>
+<ul><li><b>הבדלים בין בנים לבנות:</b> אצל בנים נוספת בעיקר מסת שריר ושלד (ולכן הם צריכים יותר אנרגיה וחלבון). אצל בנות נוספת מסת שלד ורקמת שומן.</li>
+<li><b>רכיבי תזונה שחייבים להגביר:</b> סידן (קריטי עכשיו כי כמעט חצי ממסת העצם נבנית בגיל הזה), ברזל (יש עלייה בנפח הדם ובשרירים, ואצל בנות גם איבוד דם בווסת, ולכן חובה לצרוך ברזל למניעת אנמיה), אבץ (דרוש להתפתחות התקינה של מערכת המין).</li>
+<li><b>הגורמים שמשפיעים על הצרכים התזונתיים:</b> קצב גדילה מואץ, התבגרות מינית (שינויים הורמונליים) והתבגרות חברתית (לחץ חברתי, מודל היופי).</li></ul></div>
+
+<div class="sec"><h3>4. השמנה ופעילות גופנית 🏃‍♂️🍔</h3>
+<ul><li><b>השמנה:</b> נגרמת משילוב של ג'אנק פוד, מיעוט שעות שינה, מסכים (ישיבה ממושכת) ואכילה רגשית.</li>
+<li><b>פעילות אירובית:</b> מפעילה קבוצות שרירים גדולות לאורך זמן בעזרת חמצן (ריצה, שחייה, אופניים). שורפת שומנים ופחמימות ומשפרת סיבולת לב-ריאה.</li>
+<li><b>פעילות אנאירובית:</b> עבודה לטווח קצר בעוצמה גבוהה ללא חמצן (הדוגמה הקלאסית: הרמת משקולות). מיועדת לחיזוק ופיתוח שרירים.</li></ul></div>
+
+<div class="sec"><h3>5. הפרעות אכילה ⚠️</h3>
+<p>הלחץ החברתי למראה רזה, יחד עם שינויים רגשיים, עלול להוביל להפרעות אכילה המסכנות חיים. השלוש המרכזיות לבגרות הן:</p>
+<ul><li><b>אנורקסיה נרבוזה (ציימנות):</b> הימנעות קיצונית ממזון, המובילה לאובדן משקל חמור.</li>
+<li><b>בולימיה נרבוזה (זללנות):</b> התקפי זלילה בלתי נשלטים של כמויות מזון גדולות, המלווים בדרך כלל בפעולות "ריקון" (כמו הקאות או משלשלים) כטקס היטהרות.</li>
+<li><b>הפרעת אכילת יתר (אכילה כפייתית):</b> התקפי אכילת כמויות מזון עצומות ללא שליטה וללא הקאות. הפרעה זו מלווה לרוב בבושה ומובילה פעמים רבות להשמנת יתר חמורה.</li></ul></div>
+
+<div class="sec"><h3>עקומות גדילה (Growth Curves) 📈</h3>
+<ul><li><b>מהן עקומות גדילה?</b> אלו כלים (מעין גרפים) שמשמשים אנשי מקצוע רפואיים והורים כדי להעריך ולעקוב אחר הבריאות והתזונה של הילד בתקופת הגדילה.</li>
+<li><b>מה מודדים?</b> העקומות מציגות את התפלגות המשקל, הגובה ומדד מסת הגוף (BMI) בהתאם לגיל ולמין. אצל תינוקות (עד גיל שנתיים) מודדים גם את היקף הראש.</li>
+<li><b>מהו "אחוזון"?</b> המדדים מוצגים כקווי "אחוזונים", שזהו נתון סטטיסטי המראה איפה הילד ממוקם ביחס לשאר הילדים. לדוגמה, אם ילד נמצא באחוזון 70 בגובה, זה אומר שהוא גבוה יותר מ-70% מבני גילו, ונמוך מ-30% מהם.</li>
+<li><b>התאמה אישית:</b> מכיוון שקצב הגדילה של ילדים עם תסמונות גנטיות (כמו תסמונת דאון או תסמונת טרנר) שונה מהקצב הרגיל, נוצרו עבורם עקומות גדילה מיוחדות ואופייניות רק להם.</li></ul></div>
+
+<div class="sec"><h3>אלרגיות ומערכת החיסון 🤧</h3>
+<ul><li><b>מה זו אלרגיה?</b> מדובר בתגובת־יתר של מערכת החיסון. במקום להילחם באיומים אמיתיים (כמו חיידקים), המערכת "מתבלבלת" ותוקפת חומרים תמימים שאינם באמת מסוכנים לגוף, כמו סוגי מזון מסוימים, אבקני פרחים או עובש. התגובה יכולה להתבטא בפריחה, הופעת שיעול או נפיחות בפנים הדורשת טיפול רפואי.</li></ul>
+<p><b>למה חשוב לחשוף תינוקות למזון מוצק וחדש דווקא בגיל חצי שנה?</b></p>
+<ul><li><b>לגלות סימני אלרגיה:</b> חשיפה הדרגתית וזהירה למזונות חדשים עוזרת לזהות בזמן אם התינוק רגיש למזון מסוים.</li>
+<li><b>למנוע אלרגיות בעתיד:</b> עד גיל חצי שנה, חשיפה למזונות חדשים עלולה דווקא להעלות את שכיחות האלרגיות. אולם, מגיל שישה חודשים נפתח מעין "חלון הזדמנויות" שבו מערכת החיסון עדיין מתפתחת, ולכן חשיפה למזונות מגוונים בשלב זה מקטינה משמעותית את הסיכוי שתתפתח אליהם אלרגיה בעתיד.</li></ul>
+<div class="tip"><span>עיקרון ה"חשיפה מונעת אלרגיה" נכון גם לגורמים נוספים. למשל, נמצא שילדים שחיים בסביבת חיות מחמד בשנת חייהם הראשונה, לרוב לא מפתחים כלפיהן אלרגיה בעתיד.</span></div></div>
+`},
+{id:'elderly',emoji:'👴',title:'תזונה בגיל השלישי',html:`
+<div class="sec"><h3>1. מי הם בני הגיל השלישי? 🪪</h3>
+<ul><li>הגיל השלישי מוגדר (באופן די שרירותי) מגיל 70 ומעלה.</li>
+<li>במציאות, אין באמת קו שמפריד בין מבוגרים לקשישים, כי המצב הבריאותי והנפשי של האדם חשוב יותר מהגיל שלו במספרים.</li>
+<li>תזונה נכונה במהלך החיים יכולה לעכב את תהליכי הזקנה ולמנוע מחלות כמו סוכרת ומחלות לב.</li></ul></div>
+
+<div class="sec"><h3>2. האתגרים והשינויים בגיל המבוגר 🔄</h3>
+<p>עם העלייה בתוחלת החיים, קשישים מתמודדים עם שינויים רבים שעלולים לפגוע להם בתזונה:</p>
+<ul><li><b>שינויים גופניים:</b> חוסר תיאבון, בעיות שיניים ובליעה, ירידה בחוש הטעם והריח, עצירות, וצריכת תרופות רבות.</li>
+<li><b>שינויים פסיכולוגיים וחברתיים:</b> קושי כלכלי, קושי בקניית אוכל, בדידות, דיכאון, או מחלות הפוגעות בזיכרון כמו שיטיון (דמנציה).</li>
+<li><b>שינויים במגורים:</b> מעבר למוסדות, בתי חולים או בתי אבות.</li></ul></div>
+
+<div class="sec"><h3>3. הסכנה הגדולה: תת-תזונה ⚠️</h3>
+<ul><li>כל השינויים שציינו עלולים לגרום לקשיש לאכול מעט מדי ולהגיע למצב של תת-תזונה (מחסור באנרגיה או בוויטמינים ומינרלים).</li>
+<li>התופעה נפוצה מאוד (במיוחד בבתי אבות) ויש לה השלכות קשות: ירידה בתפקוד, ריפוי איטי של פצעים, דיכאון, ועצמות שנשברות בקלות.</li></ul></div>
+
+<div class="sec"><h3>4. המלצות תזונתיות לבני הגיל השלישי 🥗</h3>
+<p>התזונה צריכה להיות מאוזנת, צבעונית ומגוונת בטעמים ובמרקמים.</p>
+<ul><li><b>אנרגיה (קלוריות):</b> בגלל שזזים פחות ויש פחות שריר, הגוף שורף פחות קלוריות. לכן, צריכים לאכול פחות קלוריות כדי לא להשמין (עודף משקל עלול לגרום לסוכרת ומחלות לב).</li>
+<li><b>חלבונים:</b> למרות שצורכים פחות קלוריות, ההמלצה היא דווקא להעלות מעט את כמות החלבון, כדי למנוע את דילול ופירוק השרירים שקורה בגיל הזה.</li>
+<li><b>פחמימות וסיבים תזונתיים:</b> כדאי לאכול פחמימות מורכבות וסיבים תזונתיים שעוזרים מאוד למנוע עצירות (בעיה נפוצה בגיל השלישי).</li></ul>
+<div class="bagrut"><span>יש סכנה גדולה למחסור בסידן וויטמין D. מחסור בהם גורם למחלת אוסטיאופורוזיס (בריחת סידן), שבה העצמות מאבדות סידן ונשברות בקלות. בנוסף - בגיל מבוגר הגוף מאבד את תחושת הצמא, ולכן קשישים חייבים לשתות גם כשהם לא צמאים כדי לא להתייבש.</span></div></div>
+
+<div class="sec"><h3>5. פעילות גופנית 🚶‍♂️</h3>
+<p>פעילות גופנית מותאמת אישית עוזרת מאוד: היא מגדילה את מסת השריר, משפרת את התיאבון ואת המצב הנפשי והשכלי.</p></div>
+
+<div class="sec"><h3>מחלת השיטיון (דמנציה) 🧠</h3>
+<ul><li><b>מהי המחלה?</b> דמנציה היא מחלה שבה נפגעות יכולות החשיבה (התפקודים הקוגניטיביים) וכן התפקודים הרגשיים וההתנהגותיים (התפקודים המנטאליים) של האדם.</li>
+<li><b>פגיעה בזיכרון ובהתמצאות:</b> חולים בדמנציה סובלים מפגיעה הדרגתית בזיכרון, ביכולת החשיבה, בהתמצאות בזמן ובמרחב, ואפילו ביכולת לזהות אנשים וחפצים מוכרים.</li>
+<li><b>תסמינים התנהגותיים ורגשיים:</b> כחלק ממהלך המחלה, החולה חווה פעמים רבות תופעות התנהגותיות קשות כמו בלבול, רוגז, חשדנות ואף התקפי אלימות.</li>
+<li><b>פגיעה בתפקוד היומיומי:</b> מעבר לפגיעה המוחית, עם הזמן מתרחשת גם פגיעה ביכולות הפיזיות של החולה. כל אלה מובילים לירידה הדרגתית ומשמעותית ביכולת שלו לבצע פעילויות יומיומיות פשוטות ולתקשר עם הסביבה.</li></ul></div>
+`},
+{id:'sport',emoji:'🏃',title:'תזונה ופעילות גופנית',html:`
+<div class="sec"><h3>1. חשיבות הפעילות הגופנית 🏃‍♀️</h3>
+<ul><li>פעילות גופנית תורמת רבות לבריאות הגוף והנפש.</li>
+<li>חוסר בפעילות מעלה את הסיכון לפתח בעיות כמו השמנה, סוכרת, אי ספיקת לב ויתר לחץ דם.</li></ul></div>
+
+<div class="sec"><h3>2. אנרגיה וקלוריות - למה ספורט לבד לא מספיק להרזיה? ⚖️</h3>
+<ul><li>כדי לרדת במשקל ולשמור על מסת השריר, הפתרון הטוב ביותר הוא שילוב של תזונה נכונה (דיאטה) יחד עם פעילות גופנית.</li>
+<li><b>למה לא רק דיאטה?</b> כי דיאטה לבדה אינה טבעית לגוף וגורמת לו "להיבהל" ולהאט את קצב חילוף החומרים הבסיסי שלו כדי לחסוך באנרגיה. הספורט (ובעיקר בניית שריר) עוזר להעלות את קצב חילוף החומרים בחזרה.</li></ul></div>
+
+<div class="sec"><h3>3. מה הגוף שורף בזמן אימון - שומן או פחמימות? 🔥</h3>
+<ul><li><b>אימון בעצימות גבוהה (מאמץ קשה):</b> הגוף צריך לקבל אנרגיה בצורה דחופה ומהירה, ולכן הוא ישתמש בעיקר בפחמימות (גלוקוז וגליקוגן).</li>
+<li><b>אימון בעצימות נמוכה/בינונית (מאמץ מתון):</b> הגוף ישרוף בעיקר שומנים. למעשה, שריפת השומן היעילה ביותר קורית במאמץ מתון, בדופק של 60%-70% מהדופק המרבי.</li></ul></div>
+
+<div class="sec"><h3>4. אבות המזון והספורט 🥗</h3>
+<ul><li><b>פחמימות:</b> מספקות אנרגיה קריטית לאימון. לפני האימון מומלץ לאכול פחמימות פשוטות שנותנות אנרגיה מהירה וזמינה, ואחרי האימון כדאי לאכול פחמימות מורכבות. חוסר בפחמימות יגרום לעייפות ויגביר סכנה לפציעות.</li>
+<li><b>חלבונים:</b> בזמן עבודת השריר נוצרים בו "קרעים" קטנים, והחלבון משקם, מחזק ובונה את השריר מחדש לאחר האימון. לרוב הגדול של האנשים אין צורך באבקות או תוספי חלבון, ואפשר לקבל את הכמות הנדרשת מאוכל רגיל. בנוסף, הגוף יכול לאגור רק כמות מוגבלת של חלבון בשריר, ולכן חלבון עודף פשוט יהפוך לשומן.</li>
+<li><b>שומנים:</b> למרות שמוציאים הרבה אנרגיה בספורט, אין צורך להעלות את כמות השומנים בתפריט היומי.</li></ul></div>
+
+<div class="sec"><h3>5. מינרלים שספורטאים חייבים לשים אליהם לב 🩸🦴</h3>
+<ul><li><b>ברזל:</b> תפקידו להוביל חמצן לשרירים. ספורטאים מאבדים ברזל בזיעה ובעיכול (ונשים מאבדות גם במחזור החודשי). מחסור בברזל פוגע בפעילות ומוביל למצב של "אנמיית ספורט".</li>
+<li><b>סידן:</b> חיוני לכיווץ והרפיית השרירים. בזמן פעילות השימוש בסידן גובר, ואם חסר סידן בדם, הגוף יפרק אותו מהעצמות, מה שעלול לגרום לדלדול עצמות.</li></ul></div>
+
+<div class="sec"><h3>6. חומצת חלב (למה נתפסים לנו השרירים?) 😫</h3>
+<ul><li>כשהגוף מתאמץ מאוד וחסר לו חמצן כדי להפיק אנרגיה, נוצר בשריר תוצר לוואי שנקרא "חומצה לקטית" (חומצת חלב).</li>
+<li>הצטברות החומצה מעלה את רמת החומציות בשריר וגורמת לכאב העז והמוכר שאנו קוראים לו "שריר תפוס".</li></ul>
+<div class="bagrut"><span>למעשה, זהו מנגנון הגנה חכם של הגוף - הכאב מאותת לנו לעצור ולנוח, וכך מונע מאיתנו להמשיך במאמץ ולגרום לעצמנו נזק של ממש.</span></div></div>
+`}
+];
+
+
+/* ===== topic <-> chapter mapping (by chapter, per user's choice) ===== */
+// questions topic id -> summary chapter id(s)
+const TOPIC_TO_CH = {
+  carbs:['carbs'], protein:['protein'], fat:['fat'], vit:['vit'], min:['min'],
+  water:['water'], digest:['digest'], intro:['intro'], sport:['sport'], energy:['energy'],
+  life:['pregnancy','childhood','elderly']
+};
+// summary chapter id -> questions topic id
+const CH_TO_TOPIC = {
+  carbs:'carbs', protein:'protein', fat:'fat', vit:'vit', min:'min', water:'water',
+  digest:'digest', intro:'intro', sport:'sport', energy:'energy',
+  pregnancy:'life', childhood:'life', elderly:'life'
+};
+function clean(t){ return t.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}️]/gu,'').trim(); }
+
+let mode='summary', activeChip='all', searchTerm='';
+
+/* ===== build nav chips per mode ===== */
+function buildNav(){
+  const nav=document.getElementById('navchips'); nav.innerHTML='';
+  const all=document.createElement('button');all.className='navchip active';all.textContent='הכל';
+  all.onclick=()=>{activeChip='all';render();highlightChip(all);};nav.appendChild(all);
+  if(mode==='summary'){
+    CH.forEach(c=>{const b=document.createElement('button');b.className='navchip';b.textContent=c.emoji+' '+clean(c.title).split(' ')[0];
+      b.onclick=()=>{const el=document.getElementById('ch-'+c.id);openSummaryChapter(el,true);el.scrollIntoView({behavior:'smooth',block:'start'});};nav.appendChild(b);});
+  }else{
+    Object.entries(TOPICS).forEach(([k,v])=>{const b=document.createElement('button');b.className='navchip';b.textContent=v.emoji+' '+v.name;
+      b.onclick=()=>{const el=document.getElementById('qch-'+k);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});};nav.appendChild(b);});
+  }
+}
+function highlightChip(el){document.querySelectorAll('.navchip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
+
+/* ===== SUMMARY render ===== */
+function renderSummary(){
+  const c=document.getElementById('summaryContent');c.innerHTML='';
+  CH.forEach(ch=>{
+    const topic=CH_TO_TOPIC[ch.id];
+    const qcount=topic?Q.filter(q=>q.topics.includes(topic)).length:0;
+    const el=document.createElement('div');el.className='chapter';el.id='ch-'+ch.id;
+    let xlink='';
+    if(topic&&qcount){
+      xlink='<button class="xlink" onclick="goToQuestions(\''+topic+'\')"><span>🎓 תרגלו: '+qcount+' שאלות בגרות בנושא '+TOPICS[topic].name+'</span><span class="arrow">←</span></button>';
+    }
+    el.innerHTML='<div class="ch-head"><span class="emoji">'+ch.emoji+'</span><h2>'+ch.title+'</h2><span class="chev">▾</span></div>'+
+      '<div class="ch-body">'+xlink+ch.html+'</div>';
+    el.querySelector('.ch-head').onclick=()=>el.classList.toggle('open');
+    c.appendChild(el);
+  });
+}
+function openSummaryChapter(el,on){if(on)el.classList.add('open');else el.classList.remove('open');}
+
+/* ===== QUESTIONS render ===== */
+function renderQuestions(){
+  const cont=document.getElementById('questionsContent');cont.innerHTML='';
+  Object.keys(TOPICS).forEach(tk=>{
+    const inT=Q.filter(q=>q.topics.includes(tk));
+    if(!inT.length)return;
+    const sec=document.createElement('div');sec.className='qchapter';sec.id='qch-'+tk;
+    // link back to summary
+    const chIds=TOPIC_TO_CH[tk]||[];
+    let back='';
+    if(chIds.length){
+      const label = chIds.length>1 ? 'חזרה לחומר במעגל החיים' : 'חזרה לחומר בסיכום: '+clean(TOPICS[tk].name);
+      back='<button class="xlink toSummary" onclick="goToSummary(\''+chIds[0]+'\')"><span>📖 '+label+'</span><span class="arrow">←</span></button>';
+    }
+    sec.innerHTML='<div class="qchapter-head"><span class="emoji">'+TOPICS[tk].emoji+'</span><h2>'+TOPICS[tk].name+'</h2><span class="cnt">'+inT.length+'</span></div>'+back;
+    inT.forEach(q=>sec.appendChild(makeQCard(q,tk)));
+    cont.appendChild(sec);
+  });
+}
+function makeQCard(q,curTopic){
+  const card=document.createElement('div');card.className='q';
+  const top=document.createElement('div');top.className='q-top';
+  let multi='';
+  if(q.topics.length>1){const others=q.topics.filter(t=>t!==curTopic).map(t=>TOPICS[t].name);multi='<span class="tag multi">🔗 גם: '+others.join(' · ')+'</span>';}
+  const tags='<span class="tag year">'+q.y+'</span><span class="tag type">'+TYPES[q.ty]+'</span>'+multi;
+  let body='<div class="q-meta">'+tags+'</div><div class="q-text">'+q.q+'</div>';
+  if(q.parts){body+='<div class="parts">'+q.parts.map(p=>'<div class="part">'+(p.l?'<span class="pl">'+p.l+'. </span>':'')+p.t+'</div>').join('')+'</div>';}
+  if(q.tableQ){body+=q.tableQ;}
+  if(q.mc){body+='<div class="mc-list">'+q.mc.map((o,i)=>'<div class="mc-q">'+'אבגד'[i]+'. '+o.t+'</div>').join('')+'</div>';}
+  top.innerHTML='<div class="qicon">+</div><div class="q-body" style="flex:1">'+body+'</div>';
+  const ans=document.createElement('div');ans.className='a';
+  let ah='<div class="a-inner"><div class="alabel">✅ תשובה</div>';
+  if(q.mc){ah+='<div class="mc-ans">'+q.mc.map((o,i)=>'<span class="opt'+(o.correct?' correct':'')+'">'+'אבגד'[i]+'. '+o.t+'</span>').join('')+'</div>';}
+  else{
+    // number the answer paragraphs as sub-parts (א/ב/ג...) when there are 2+
+    let a=q.ans;
+    const pcount=(a.match(/<p>/g)||[]).length;
+    if(pcount>=2 && !/class="pl"/.test(a) && a.indexOf('<table')===-1){
+      let i=0; const marks='אבגדהוזחט';
+      a=a.replace(/<p>/g,()=>{const m=marks[i]||(i+1); i++; return '<p><span class="pl">'+m+'. </span>';});
+    }
+    ah+=a;
+  }
+  // per-question links back to the summary material (one per topic)
+  const studyLinks=q.topics.map(t=>{const ch=(TOPIC_TO_CH[t]||[])[0]; if(!ch)return ''; return '<button class="studylink" onclick="event.stopPropagation();goToSummary(\''+ch+'\')">📖 ללמוד על '+TOPICS[t].name+' →</button>';}).join('');
+  if(studyLinks)ah+='<div class="studyrow">'+studyLinks+'</div>';
+  ah+='</div>';ans.innerHTML=ah;
+  top.onclick=()=>card.classList.toggle('open');
+  card.appendChild(top);card.appendChild(ans);
+  return card;
+}
+
+/* ===== cross navigation ===== */
+function goToQuestions(topic){
+  setMode('questions');
+  setTimeout(()=>{const el=document.getElementById('qch-'+topic);if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.querySelector('.qchapter-head').classList.add('flash');setTimeout(()=>el.querySelector('.qchapter-head').classList.remove('flash'),1300);}},120);
+}
+function goToSummary(chId){
+  setMode('summary');
+  setTimeout(()=>{const el=document.getElementById('ch-'+chId);if(el){openSummaryChapter(el,true);el.scrollIntoView({behavior:'smooth',block:'start'});el.querySelector('.ch-head').classList.add('flash');setTimeout(()=>el.querySelector('.ch-head').classList.remove('flash'),1300);}},120);
+}
+
+/* ===== mode switch ===== */
+function setMode(m){
+  mode=m;
+  document.getElementById('btnSummary').classList.toggle('active',m==='summary');
+  document.getElementById('btnQuestions').classList.toggle('active',m==='questions');
+  document.getElementById('view-summary').classList.toggle('active',m==='summary');
+  document.getElementById('view-questions').classList.toggle('active',m==='questions');
+  document.getElementById('search').value='';searchTerm='';
+  buildNav();
+  document.getElementById('count').textContent='';
+  document.getElementById('noresults').style.display='none';
+}
+
+/* ===== search (within current mode) ===== */
+document.getElementById('search').addEventListener('input',e=>{
+  searchTerm=e.target.value.trim().toLowerCase();
+  if(mode==='summary')searchSummary();else searchQuestions();
+});
+function searchSummary(){
+  renderSummary();
+  if(!searchTerm){document.getElementById('noresults').style.display='none';document.getElementById('count').textContent='';return;}
+  let any=false;
+  document.querySelectorAll('#summaryContent .chapter').forEach(ch=>{
+    const body=ch.querySelector('.ch-body');
+    if(body.textContent.toLowerCase().includes(searchTerm)){any=true;ch.classList.add('open');ch.style.display='';}
+    else ch.style.display='none';
+  });
+  document.getElementById('noresults').style.display=any?'none':'block';
+  document.getElementById('count').textContent='';
+}
+function searchQuestions(){
+  renderQuestions();
+  if(!searchTerm){document.getElementById('noresults').style.display='none';document.getElementById('count').textContent='';return;}
+  let cnt=0;
+  document.querySelectorAll('#questionsContent .qchapter').forEach(sec=>{
+    let shown=0;
+    sec.querySelectorAll('.q').forEach(qc=>{
+      if(qc.textContent.toLowerCase().includes(searchTerm)){qc.style.display='';shown++;cnt++;}
+      else qc.style.display='none';
+    });
+    sec.style.display=shown?'':'none';
+  });
+  document.getElementById('noresults').style.display=cnt?'none':'block';
+  document.getElementById('count').textContent='נמצאו '+cnt+' שאלות';
+}
+
+/* ===== init ===== */
+renderSummary();renderQuestions();buildNav();
+document.querySelector('#summaryContent .chapter').classList.add('open');
+
+/* ===== Text-to-Speech controller ===== */
+const TTS={
+  rate:1,voice:null,el:null,sentences:[],i:0,paused:false,
+  init(){
+    if(!('speechSynthesis' in window))return;
+    const pick=()=>{const vs=speechSynthesis.getVoices();
+      this.voice=vs.find(v=>/^he/i.test(v.lang))||null;};
+    pick(); speechSynthesis.onvoiceschanged=pick;
+  },
+  strip(t){return (t||'').replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{2190}-\u{21FF}\u{2713}\u{2714}️]/gu,' ').replace(/\s+/g,' ').trim();},
+  speak(el,textOverride){
+    if(!('speechSynthesis' in window)){alert('הדפדפן אינו תומך בהקראה קולית. נסו בדפדפן Chrome / Edge.');return;}
+    if(this.el===el){this.stop();return;}      /* click same block again = stop */
+    this.stop();
+    this.el=el; el.classList.add('tts-reading');
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    const raw=this.strip(textOverride!=null?textOverride:(el.innerText||el.textContent));
+    this.sentences=raw.split(/(?<=[.!?׃:])\s+|\n+/).map(s=>s.trim()).filter(Boolean);
+    if(!this.sentences.length)this.sentences=[raw];
+    this.i=0;this.paused=false;
+    document.body.classList.add('tts-on');
+    document.getElementById('ttsBar').classList.add('open');
+    document.getElementById('ttsToggle').textContent='⏸';
+    this._next();
+  },
+  _next(){
+    if(this.paused)return;
+    if(this.i>=this.sentences.length){this.stop();return;}
+    const u=new SpeechSynthesisUtterance(this.sentences[this.i]);
+    u.lang='he-IL'; if(this.voice)u.voice=this.voice; u.rate=this.rate;
+    document.getElementById('ttsTxt').textContent=this.sentences[this.i];
+    u.onend=()=>{ if(this.paused)return; this.i++; this._next(); };
+    u.onerror=()=>{ this.i++; if(!this.paused)this._next(); };
+    speechSynthesis.speak(u);
+  },
+  toggle(){
+    if(!this.el)return;
+    if(this.paused){
+      this.paused=false; document.getElementById('ttsToggle').textContent='⏸';
+      if(speechSynthesis.paused)speechSynthesis.resume();
+      if(!speechSynthesis.speaking)this._next();
+    }else{
+      this.paused=true; document.getElementById('ttsToggle').textContent='▶';
+      speechSynthesis.pause();
+    }
+  },
+  stop(){
+    if('speechSynthesis' in window)speechSynthesis.cancel();
+    if(this.el)this.el.classList.remove('tts-reading');
+    this.el=null;this.sentences=[];this.i=0;this.paused=false;
+    document.body.classList.remove('tts-on');
+    document.getElementById('ttsBar').classList.remove('open');
+  }
+};
+TTS.init();
+document.getElementById('ttsToggle').onclick=()=>TTS.toggle();
+document.getElementById('ttsStop').onclick=()=>TTS.stop();
+
+/* ===== inject 🔊 read buttons after every render ===== */
+function enhanceReadButtons(){
+  document.querySelectorAll('#summaryContent .chapter').forEach(ch=>{
+    const head=ch.querySelector('.ch-head');
+    if(head && !head.querySelector('.readbtn')){
+      const b=document.createElement('button');
+      b.className='readbtn';b.title='הקראת הפרק';b.setAttribute('aria-label','הקראת הפרק');b.textContent='🔊';
+      b.onclick=e=>{e.stopPropagation(); ch.classList.add('open');
+        const body=ch.querySelector('.ch-body');
+        const clone=body.cloneNode(true);
+        clone.querySelectorAll('.xlink').forEach(n=>n.remove());
+        TTS.speak(body, clone.innerText);
+      };
+      head.insertBefore(b, head.querySelector('.chev'));
+    }
+  });
+  document.querySelectorAll('#questionsContent .q').forEach(q=>{
+    const inner=q.querySelector('.a-inner');
+    if(inner && !inner.querySelector('.q-readbtn')){
+      const b=document.createElement('button');
+      b.className='q-readbtn';b.innerHTML='🔊 האזינו לשאלה ולתשובה';
+      b.onclick=e=>{e.stopPropagation(); q.classList.add('open');
+        const clone=inner.cloneNode(true);
+        clone.querySelectorAll('.q-readbtn,.studyrow,.alabel').forEach(n=>n.remove());
+        const qText=q.querySelector('.q-text');
+        const txt=(qText?qText.innerText:'')+'. '+(clone.innerText||'');
+        TTS.speak(q, txt);
+      };
+      inner.insertBefore(b, inner.firstChild);
+    }
+  });
+}
+/* wrap the renderers so buttons survive re-renders (search / mode switch) */
+['renderSummary','renderQuestions'].forEach(name=>{
+  const orig=window[name];
+  window[name]=function(){ TTS.stop(); const r=orig.apply(this,arguments); enhanceReadButtons(); return r; };
+});
+enhanceReadButtons();
+
+/* ===== accessibility settings (font size / spacing / background / rate) ===== */
+(function(){
+  const LS='ntz_a11y_v1';
+  const state=Object.assign({font:0,spacing:false,plainbg:false,rate:1},
+    JSON.parse(localStorage.getItem(LS)||'{}'));
+  const wrap=document.querySelector('.wrap');
+  const save=()=>localStorage.setItem(LS,JSON.stringify(state));
+  function apply(){
+    const scales=[1,1.15,1.3,1.45];
+    wrap.style.zoom=scales[Math.max(0,Math.min(3,state.font))];
+    document.body.classList.toggle('a11y-spacing',state.spacing);
+    document.body.classList.toggle('a11y-plainbg',state.plainbg);
+    const sp=document.getElementById('tglSpacing'),bg=document.getElementById('tglBg');
+    sp.classList.toggle('on',state.spacing); sp.setAttribute('aria-pressed',state.spacing);
+    bg.classList.toggle('on',state.plainbg); bg.setAttribute('aria-pressed',state.plainbg);
+    document.getElementById('rateRange').value=state.rate;
+    document.getElementById('rateVal').textContent=state.rate.toFixed(1);
+    TTS.rate=state.rate;
+  }
+  document.getElementById('a11yFab').onclick=()=>document.getElementById('a11yPanel').classList.toggle('open');
+  document.getElementById('fontPlus').onclick=()=>{state.font=Math.min(3,state.font+1);save();apply();};
+  document.getElementById('fontMinus').onclick=()=>{state.font=Math.max(0,state.font-1);save();apply();};
+  document.getElementById('fontReset').onclick=()=>{state.font=0;save();apply();};
+  document.getElementById('tglSpacing').onclick=()=>{state.spacing=!state.spacing;save();apply();};
+  document.getElementById('tglBg').onclick=()=>{state.plainbg=!state.plainbg;save();apply();};
+  document.getElementById('rateRange').oninput=e=>{state.rate=parseFloat(e.target.value);save();apply();};
+  apply();
+})();
+</script>
+</body>
+</html>
