@@ -148,6 +148,7 @@
     border:3px solid var(--teal);border-radius:12px;padding:8px 13px;box-shadow:2px 2px 0 var(--ink);
     display:inline-flex;align-items:center;gap:6px;min-height:42px;}
   .q-readbtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
+  .q-readbtn-q{margin-top:10px;margin-bottom:0;background:var(--yelf);border-color:var(--coral);}
 
   .tts-reading{outline:4px solid var(--purp);outline-offset:3px;border-radius:10px;background:var(--purpf)!important;}
 
@@ -898,16 +899,27 @@ function enhanceReadButtons(){
     }
   });
   document.querySelectorAll('#questionsContent .q').forEach(q=>{
+    const qbody=q.querySelector('.q-body');
     const inner=q.querySelector('.a-inner');
-    if(inner && !inner.querySelector('.q-readbtn')){
+    /* button 1 — read the QUESTION on its own (incl. multiple-choice options) */
+    if(qbody && !qbody.querySelector('.q-readbtn')){
       const b=document.createElement('button');
-      b.className='q-readbtn';b.innerHTML='🔊 האזינו לשאלה ולתשובה';
+      b.className='q-readbtn q-readbtn-q';b.innerHTML='🔊 הקראת השאלה';b.setAttribute('aria-label','הקראת השאלה');
+      b.onclick=e=>{e.stopPropagation();
+        const qt=q.querySelector('.q-text'),pp=q.querySelector('.parts'),mm=q.querySelector('.mc-list');
+        const txt=[qt&&qt.innerText,pp&&pp.innerText,mm&&mm.innerText].filter(Boolean).join('. ');
+        TTS.speak(qbody, txt);
+      };
+      qbody.appendChild(b);
+    }
+    /* button 2 — read the ANSWER on its own */
+    if(inner && !inner.querySelector('.answer-readbtn')){
+      const b=document.createElement('button');
+      b.className='q-readbtn answer-readbtn';b.innerHTML='🔊 הקראת התשובה';b.setAttribute('aria-label','הקראת התשובה');
       b.onclick=e=>{e.stopPropagation(); q.classList.add('open');
         const clone=inner.cloneNode(true);
-        clone.querySelectorAll('.q-readbtn,.studyrow,.alabel').forEach(n=>n.remove());
-        const qText=q.querySelector('.q-text');
-        const txt=(qText?qText.innerText:'')+'. '+(clone.innerText||'');
-        TTS.speak(q, txt);
+        clone.querySelectorAll('.q-readbtn,.answer-readbtn,.studyrow,.alabel').forEach(n=>n.remove());
+        TTS.speak(inner, clone.innerText||'');
       };
       inner.insertBefore(b, inner.firstChild);
     }
