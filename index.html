@@ -92,6 +92,8 @@
   .tag{font-family:'Heebo';font-weight:700;font-size:11px;border-radius:14px;padding:2px 9px;border:2px solid var(--ink);}
   .tag.year{background:var(--purpf);} .tag.type{background:var(--tealf);} .tag.multi{background:var(--yel);}
   .q-text{font-family:'Heebo';font-weight:800;font-size:17px;line-height:1.45;}
+  .q-parts{margin-top:10px;}
+  .q-parts .part{font-family:'Heebo';font-weight:800;font-size:16px;line-height:1.5;margin-bottom:7px;}
   .parts{margin-top:9px;}
   .part{font-weight:700;font-size:15.5px;line-height:1.5;margin-bottom:5px;}
   .part .pl,.a-inner .pl{color:var(--coral);font-weight:800;}
@@ -731,13 +733,27 @@ function renderQuestions(){
     cont.appendChild(sec);
   });
 }
+/* split a question string into numbered sub-parts (א/ב/ג) like the answers */
+function formatQuestionText(qq){
+  let lead='', rest=qq;
+  const m=qq.match(/^([^—]*—)\s*([\s\S]*)$/);          /* "נושא — ..." → topic lead + rest */
+  if(m){ lead=m[1].trim(); rest=m[2].trim(); }
+  const parts=rest.split(/(?<=[.?!])\s+/).map(s=>s.trim()).filter(Boolean);
+  if(parts.length<2) return '<div class="q-text">'+qq+'</div>';   /* single-part question */
+  const marks='אבגדהוזחט';
+  let h = lead ? '<div class="q-text">'+lead+'</div>' : '';
+  h += '<div class="parts q-parts">'+parts.map((s,i)=>
+        '<div class="part"><span class="pl">'+(marks[i]||(i+1))+'. </span>'+s+'</div>').join('')+'</div>';
+  return h;
+}
 function makeQCard(q,curTopic){
   const card=document.createElement('div');card.className='q';
   const top=document.createElement('div');top.className='q-top';
   let multi='';
   if(q.topics.length>1){const others=q.topics.filter(t=>t!==curTopic).map(t=>TOPICS[t].name);multi='<span class="tag multi">🔗 גם: '+others.join(' · ')+'</span>';}
   const tags='<span class="tag year">'+q.y+'</span><span class="tag type">'+TYPES[q.ty]+'</span>'+multi;
-  let body='<div class="q-meta">'+tags+'</div><div class="q-text">'+q.q+'</div>';
+  const qHtml=(q.ty==='mc')?'<div class="q-text">'+q.q+'</div>':formatQuestionText(q.q);
+  let body='<div class="q-meta">'+tags+'</div>'+qHtml;
   if(q.parts){body+='<div class="parts">'+q.parts.map(p=>'<div class="part">'+(p.l?'<span class="pl">'+p.l+'. </span>':'')+p.t+'</div>').join('')+'</div>';}
   if(q.tableQ){body+=q.tableQ;}
   if(q.mc){body+='<div class="mc-list">'+q.mc.map((o,i)=>'<div class="mc-q">'+'אבגד'[i]+'. '+o.t+'</div>').join('')+'</div>';}
