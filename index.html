@@ -22,7 +22,7 @@
   header h1{font-family:'Suez One';font-size:clamp(26px,5vw,42px);margin-top:12px;text-shadow:4px 4px 0 var(--yel);}
 
   /* mode switch */
-  .modeswitch{display:flex;gap:10px;justify-content:center;margin:16px 0;position:sticky;top:10px;z-index:50;}
+  .modeswitch{display:flex;gap:10px;justify-content:center;padding:12px 0 8px;position:sticky;top:0;z-index:50;background:var(--cream);}
   .modebtn{font-family:'Heebo';font-weight:800;font-size:17px;background:#fff;border:4px solid var(--ink);
     border-radius:30px;padding:10px 26px;box-shadow:3px 3px 0 var(--ink);transition:transform .08s;}
   .modebtn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
@@ -975,6 +975,15 @@ enhanceReadButtons();
   document.getElementById('tglBg').onclick=()=>{state.plainbg=!state.plainbg;save();apply();};
   document.getElementById('rateRange').oninput=e=>{state.rate=parseFloat(e.target.value);save();apply();};
   apply();
+})();
+
+/* keep the controls bar pinned flush below the (variable-height) mode bar */
+(function(){
+  const ms=document.querySelector('.modeswitch'), ctl=document.querySelector('.controls');
+  const sync=()=>{ ctl.style.top=ms.offsetHeight+'px'; };
+  sync();
+  if(window.ResizeObserver) new ResizeObserver(sync).observe(ms);
+  window.addEventListener('resize',sync);
 })();
 </script>
 </body>
