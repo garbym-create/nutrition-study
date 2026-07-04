@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>משחק · מיון מוצרים לקבוצות המזון</title>
+<style>
+  :root{
+    --green:#1E7A3D; --dk:#10301D; --lime:#8BC34A; --coral:#E85D2F; --gold:#F0A83A;
+    --ink:#16241C; --muted:#5F6F64; --card:#F6F9F4; --greensoft:#E4F1E4; --line:#D8E2D5;
+    --grain:#D79A2B; --veg:#4FA23F; --prot:#C7522A; --fat:#E4B53C; --sweet:#8E6BA8; --water:#3E8FC4;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(160deg,#0d2a19,#164a2b);
+    color:var(--ink);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;overflow-x:hidden}
+  .app{width:100%;max-width:600px}
+  .stage{background:#fff;border-radius:22px;padding:20px 18px 22px;box-shadow:0 18px 50px rgba(0,0,0,.32);position:relative;overflow:hidden}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .bar{flex:1;height:12px;background:var(--greensoft);border-radius:99px;overflow:hidden}
+  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--lime),var(--green));border-radius:99px;transition:width .45s cubic-bezier(.4,1.3,.5,1)}
+  .score{font-weight:800;color:var(--green);font-size:14px;white-space:nowrap;background:var(--greensoft);padding:6px 12px;border-radius:99px}
+  .score b{color:var(--gold)}
+  .kicker{color:var(--gold);font-weight:800;font-size:13px;letter-spacing:.4px;margin-bottom:10px;text-align:center}
+  h1{font-size:26px;line-height:1.25;margin-bottom:6px}
+  h2{font-size:19px;line-height:1.3;color:var(--muted);font-weight:700;margin-bottom:14px;text-align:center}
+  .prod{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:22px 16px;text-align:center;margin-bottom:16px;transition:.2s}
+  .prod .em{font-size:74px;line-height:1;margin-bottom:6px}
+  .prod .nm{font-size:24px;font-weight:800;color:var(--ink)}
+  .ask{text-align:center;font-size:15px;font-weight:700;color:var(--muted);margin-bottom:12px}
+  .groups{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grp{border:none;border-radius:15px;padding:16px 8px;font-size:16px;font-weight:800;font-family:inherit;color:#fff;cursor:pointer;transition:transform .12s,box-shadow .2s;display:flex;align-items:center;justify-content:center;gap:7px;min-height:58px;line-height:1.15}
+  .grp:active{transform:scale(.96)}
+  .grp[disabled]{cursor:default}
+  .grp .gi{font-size:22px}
+  .g-grain{background:var(--grain)} .g-veg{background:var(--veg)} .g-prot{background:var(--prot)}
+  .g-fat{background:var(--fat);color:#5b4410} .g-sweet{background:var(--sweet)} .g-water{background:var(--water)}
+  .grp.dim{opacity:.32;filter:grayscale(.4)}
+  .grp.right{outline:4px solid #1E7A3D;box-shadow:0 0 0 4px #dff3e2}
+  .grp.wrongpick{outline:4px solid #E85D2F;box-shadow:0 0 0 4px #fbe7df}
+  .fb{margin-top:15px;border-radius:15px;padding:14px 15px;font-size:15px;line-height:1.55;display:none;animation:pop .3s}
+  .fb.show{display:block}
+  .fb.ok{background:#DFF3E2;color:#155e2c;border:1.5px solid #9ed3ac}
+  .fb.no{background:#fbe7df;color:#9E3417;border:1.5px solid #e9b6a3}
+  .fb b{font-weight:800}
+  @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:none;border-radius:16px;padding:16px;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer;transition:transform .12s;background:var(--green);color:#fff;box-shadow:0 8px 20px rgba(30,122,61,.35)}
+  .btn:active{transform:scale(.97)}
+  .btn.gold{background:var(--gold);color:var(--dk)}
+  .next{margin-top:14px;display:none}.next.show{display:block}
+  .footer{text-align:center;color:#9DB3A2;font-size:12px;margin-top:14px}
+  /* welcome */
+  .hero{text-align:center;padding:6px 4px}
+  .hero .emoji{font-size:56px;margin-bottom:8px}
+  .legend{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:14px 0 20px}
+  .lg{font-weight:800;font-size:12.5px;padding:7px 12px;border-radius:99px;color:#fff}
+  .sub{color:var(--muted);font-size:15px;line-height:1.5;margin-bottom:8px}
+  /* result */
+  .result{text-align:center;padding:4px}
+  .medal{font-size:68px;margin-bottom:6px}
+  .scoreline{font-size:19px;font-weight:800;color:var(--green);margin:6px 0}
+  .scoreline b{color:var(--gold);font-size:25px}
+  .rmsg{color:var(--muted);font-size:16px;line-height:1.5;margin:8px 0 18px}
+  .confetti{position:fixed;top:-10px;width:10px;height:14px;z-index:5;border-radius:2px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage"></div>
+  <div class="footer">מדעי התזונה · פירמידת המזון · משחק — גרבי מרי</div>
+</div>
+<script>
+const GROUPS={
+  grain:{name:"דגנים",cls:"g-grain",ic:"🍞"},
+  veg:{name:"ירקות ופירות",cls:"g-veg",ic:"🥦"},
+  prot:{name:"חלבונים",cls:"g-prot",ic:"🥩"},
+  fat:{name:"שומנים",cls:"g-fat",ic:"🥑"},
+  sweet:{name:"ממתקים וחטיפים",cls:"g-sweet",ic:"🍫"},
+};
+const ORDER=["grain","veg","prot","fat","sweet"];
+const ITEMS=[
+  {em:"🍞",nm:"לחם",g:"grain",why:"עשיר בעמילן (פחמימות) — קבוצת הדגנים."},
+  {em:"🍚",nm:"אורז",g:"grain",why:"דגן עשיר בפחמימות."},
+  {em:"🥔",nm:"תפוח אדמה",g:"grain",why:"נמנה עם קבוצת הדגנים בזכות העמילן שבו."},
+  {em:"🥣",nm:"דגני בוקר",g:"grain",why:"מבוססים על דגנים — פחמימות."},
+  {em:"🍅",nm:"עגבנייה",g:"veg",why:"ירק עשיר במים, סיבים וּויטמינים."},
+  {em:"🥕",nm:"גזר",g:"veg",why:"ירק — מקור לבטא-קרוטן וּויטמינים."},
+  {em:"🍎",nm:"תפוח",g:"veg",why:"פרי — יחד עם ירקות באותה קומה בפירמידה."},
+  {em:"🍓",nm:"תות",g:"veg",why:"פרי עשיר בוויטמין C."},
+  {em:"🥚",nm:"ביצה",g:"prot",why:"מקור חלבון מן החי."},
+  {em:"🍗",nm:"עוף",g:"prot",why:"בשר — עשיר בחלבון וברזל."},
+  {em:"🧀",nm:"גבינה",g:"prot",why:"מוצר חלב — חלבון ומקור לסידן."},
+  {em:"🫘",nm:"עדשים",g:"prot",why:"קטניות = חלבון מן הצומח."},
+  {em:"🐟",nm:"דג",g:"prot",why:"מקור חלבון איכותי מן החי."},
+  {em:"🥑",nm:"אבוקדו",g:"fat",why:"עשיר בשומן (לא-רווי) — קבוצת השומנים."},
+  {em:"🥜",nm:"אגוזים",g:"fat",why:"עשירים בשומן בריא."},
+  {em:"🫒",nm:"זיתים",g:"fat",why:"מקור לשומן — קבוצת השומנים."},
+  {em:"🫗",nm:"שמן",g:"fat",why:"שומן נוזלי — לצרוך במידה."},
+  {em:"🍫",nm:"שוקולד",g:"sweet",why:"עשיר בסוכר ושומן — הקומה הקטומה."},
+  {em:"🥤",nm:"שתייה מתוקה",g:"sweet",why:"סוכר בלבד — כדאי להמעיט."},
+  {em:"🍰",nm:"עוגה",g:"sweet",why:"ממתק — לא חיוני, להמעיט."},
+];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let deck=[], idx=0, score=0, answered=false;
+const TOTAL=12;
+const stage=document.getElementById('stage');
+
+function start(){ deck=shuffle([...ITEMS]).slice(0,TOTAL); idx=0; score=0; render(); }
+
+function render(){
+  answered=false;
+  if(idx>=deck.length) return result();
+  const it=deck[idx];
+  const prog=Math.round(idx/deck.length*100);
+  let g=`<div class="groups">`;
+  ORDER.forEach(k=>{ g+=`<button class="grp ${GROUPS[k].cls}" data-g="${k}"><span class="gi">${GROUPS[k].ic}</span>${GROUPS[k].name}</button>`; });
+  g+=`</div>`;
+  stage.innerHTML=`
+    <div class="top">
+      <div class="score">ניקוד <b>${score}</b>/${deck.length}</div>
+      <div class="bar"><i style="width:${prog}%"></i></div>
+    </div>
+    <div class="kicker">מיון מוצרים · פריט ${idx+1} מתוך ${deck.length}</div>
+    <div class="prod"><div class="em">${it.em}</div><div class="nm">${it.nm}</div></div>
+    <div class="ask">לאיזו קבוצת מזון שייך המוצר?</div>
+    ${g}
+    <div class="fb" id="fb"></div>
+    <div class="next" id="nextwrap"><button class="btn gold" id="nx">${idx===deck.length-1?'לתוצאות ←':'למוצר הבא ←'}</button></div>`;
+  stage.querySelectorAll('.grp').forEach(b=>b.onclick=()=>pick(b,it));
+  document.getElementById('nx').onclick=()=>{idx++;render();};
+}
+function pick(btn,it){
+  if(answered) return; answered=true;
+  const chosen=btn.dataset.g, ok=(chosen===it.g);
+  stage.querySelectorAll('.grp').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.g===it.g) b.classList.add('right');
+    else if(b.dataset.g===chosen) b.classList.add('wrongpick');
+    else b.classList.add('dim');
+  });
+  if(ok) score++;
+  const fb=document.getElementById('fb');
+  fb.className='fb show '+(ok?'ok':'no');
+  fb.innerHTML=`<b>${ok?'נכון! ✓':'לא מדויק ✗'}</b> ${it.nm} → <b>${GROUPS[it.g].name}</b>.<br>${it.why}`;
+  document.getElementById('nextwrap').classList.add('show');
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function result(){
+  const pct=Math.round(score/deck.length*100);
+  let medal='🌱',msg='התחלה טובה! חזרו על קומות הפירמידה ונסו שוב.';
+  if(pct>=100){medal='🏆';msg='מושלם! אתם מומחים במיון קבוצות המזון!';}
+  else if(pct>=75){medal='🥇';msg='מצוין! אתם מכירים היטב את קבוצות המזון.';}
+  else if(pct>=50){medal='🥈';msg='יפה מאוד! עוד קצת תרגול ותשלטו בזה לגמרי.';}
+  stage.innerHTML=`
+    <div class="result">
+      <div class="medal">${medal}</div>
+      <div class="kicker">סיום המשחק</div>
+      <div class="scoreline">מיינתם נכון <b>${score}</b> מתוך ${deck.length}</div>
+      <div class="bar" style="max-width:220px;margin:14px auto 18px"><i style="width:${pct}%"></i></div>
+      <div class="rmsg">${msg}</div>
+      <button class="btn" id="again">↺ שחקו שוב</button>
+    </div>`;
+  document.getElementById('again').onclick=start;
+  if(pct>=75) burst();
+}
+function burst(){const cols=['#1E7A3D','#8BC34A','#F0A83A','#E85D2F','#8E6BA8','#3E8FC4'];
+  for(let i=0;i<70;i++){const c=document.createElement('div');c.className='confetti';
+    c.style.left=Math.random()*100+'vw';c.style.background=cols[i%cols.length];
+    document.body.appendChild(c);const dur=2200+Math.random()*1600,dx=(Math.random()-.5)*220;
+    c.animate([{transform:'translate(0,0)',opacity:1},{transform:`translate(${dx}px,102vh) rotate(${720*(Math.random()>.5?1:-1)}deg)`,opacity:.9}],{duration:dur,easing:'cubic-bezier(.3,.6,.5,1)'});
+    setTimeout(()=>c.remove(),dur);}}
+function welcome(){
+  let lg='';ORDER.forEach(k=>{lg+=`<span class="lg ${GROUPS[k].cls}">${GROUPS[k].ic} ${GROUPS[k].name}</span>`;});
+  stage.innerHTML=`
+    <div class="hero">
+      <div class="emoji">🍞🥦🥩🥑🍫</div>
+      <div class="kicker">מדעי התזונה · פירמידת המזון</div>
+      <h1>מיון מוצרים לקבוצות</h1>
+      <div class="sub">יופיע מוצר — ועליכם לבחור לאיזו קבוצת מזון הוא שייך. ${TOTAL} מוצרים, משוב והסבר לכל אחד.</div>
+      <div class="legend">${lg}</div>
+      <button class="btn gold" id="go">▶ בואו נתחיל</button>
+    </div>`;
+  document.getElementById('go').onclick=start;
+}
+welcome();
+</script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>משחק · מבוא למדעי התזונה</title>
+<style>
+  :root{
+    --green:#1E7A3D; --dk:#10301D; --lime:#8BC34A; --coral:#E85D2F;
+    --gold:#F0A83A; --ink:#16241C; --muted:#5F6F64; --card:#F6F9F4;
+    --greensoft:#E4F1E4; --coralsoft:#FBE7DF; --line:#D8E2D5;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Segoe UI',Arial,'Helvetica Neue',sans-serif;
+    background:linear-gradient(160deg,#0d2a19 0%,#164a2b 100%);
+    color:var(--ink);min-height:100dvh;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:14px;overflow-x:hidden;
+  }
+  .app{width:100%;max-width:560px}
+  .stage{
+    background:#fff;border-radius:22px;padding:22px 20px 24px;
+    box-shadow:0 18px 50px rgba(0,0,0,.32);position:relative;overflow:hidden;
+  }
+  /* top bar */
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .bar{flex:1;height:12px;background:var(--greensoft);border-radius:99px;overflow:hidden}
+  .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--lime),var(--green));border-radius:99px;transition:width .45s cubic-bezier(.4,1.3,.5,1)}
+  .score{font-weight:800;color:var(--green);font-size:15px;white-space:nowrap;background:var(--greensoft);padding:6px 12px;border-radius:99px}
+  .score b{color:var(--gold)}
+  /* headings */
+  .kicker{color:var(--gold);font-weight:800;font-size:13px;letter-spacing:.5px;margin-bottom:6px}
+  h1{font-size:27px;line-height:1.25;color:var(--ink);margin-bottom:6px}
+  h2{font-size:22px;line-height:1.3;color:var(--ink);margin-bottom:4px}
+  .sub{color:var(--muted);font-size:15px;line-height:1.5;margin-bottom:18px}
+  /* welcome */
+  .hero{text-align:center;padding:8px 4px 6px}
+  .hero .emoji{font-size:60px;margin-bottom:10px;line-height:1}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 22px}
+  .chip{background:var(--greensoft);color:var(--green);font-weight:700;font-size:13px;padding:8px 14px;border-radius:99px}
+  /* buttons */
+  .btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    border:none;border-radius:16px;padding:17px;font-size:18px;font-weight:800;
+    font-family:inherit;cursor:pointer;transition:transform .12s,box-shadow .2s;
+    background:var(--green);color:#fff;box-shadow:0 8px 20px rgba(30,122,61,.35)
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.gold{background:var(--gold);color:var(--dk);box-shadow:0 8px 20px rgba(240,168,58,.4)}
+  .btn.ghost{background:#fff;color:var(--green);border:2px solid var(--line);box-shadow:none}
+  /* options */
+  .opts{display:grid;gap:11px;margin-bottom:6px}
+  .opt{
+    display:flex;align-items:center;gap:13px;text-align:right;width:100%;
+    background:var(--card);border:2px solid transparent;border-radius:15px;
+    padding:15px 16px;font-size:17px;font-weight:600;font-family:inherit;color:var(--ink);
+    cursor:pointer;transition:.15s;position:relative
+  }
+  .opt .ic{font-size:26px;line-height:1;flex-shrink:0}
+  .opt:active{transform:scale(.98)}
+  .opt.sel{border-color:var(--green);background:var(--greensoft)}
+  .opt.correct{border-color:var(--green);background:#DFF3E2}
+  .opt.wrong{border-color:var(--coral);background:var(--coralsoft)}
+  .opt .mark{margin-inline-start:auto;font-size:22px;font-weight:900;opacity:0;transition:.2s}
+  .opt.correct .mark{opacity:1;color:var(--green)}
+  .opt.wrong .mark{opacity:1;color:var(--coral)}
+  .opt[disabled]{cursor:default}
+  /* two-bin sort */
+  .card2{background:var(--card);border-radius:16px;padding:20px 16px;text-align:center;font-size:20px;font-weight:800;margin-bottom:16px;min-height:88px;display:flex;align-items:center;justify-content:center;gap:10px}
+  .card2 .ic{font-size:34px}
+  .bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .bin{
+    border:none;border-radius:15px;padding:16px 10px;font-size:16px;font-weight:800;
+    font-family:inherit;cursor:pointer;color:#fff;transition:transform .12s;line-height:1.3
+  }
+  .bin:active{transform:scale(.96)}
+  .bin.cause{background:var(--coral)}
+  .bin.danger{background:#B23A86}
+  .bin small{display:block;font-weight:600;font-size:12px;opacity:.9;margin-top:3px}
+  /* true/false */
+  .tf{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .tf button{border:none;border-radius:15px;padding:22px;font-size:19px;font-weight:800;font-family:inherit;cursor:pointer;transition:transform .12s}
+  .tf button:active{transform:scale(.96)}
+  .tf .yes{background:var(--greensoft);color:var(--green)}
+  .tf .no{background:var(--coralsoft);color:var(--coral)}
+  /* feedback */
+  .fb{margin-top:16px;border-radius:15px;padding:15px 16px;font-size:15px;line-height:1.55;display:none;animation:pop .3s}
+  .fb.show{display:block}
+  .fb.ok{background:#DFF3E2;color:#155e2c;border:1.5px solid #9ed3ac}
+  .fb.no{background:var(--coralsoft);color:#9E3417;border:1.5px solid #e9b6a3}
+  .fb b{font-weight:800}
+  @keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+  .next{margin-top:16px;display:none}
+  .next.show{display:block}
+  /* multi progress hint */
+  .hint{font-size:13px;color:var(--muted);margin-bottom:12px;font-weight:600}
+  /* result */
+  .result{text-align:center;padding:6px 4px}
+  .result .big{font-size:64px;margin:4px 0 2px}
+  .medal{font-size:70px;line-height:1;margin-bottom:8px}
+  .scoreline{font-size:20px;font-weight:800;color:var(--green);margin:8px 0 4px}
+  .scoreline b{color:var(--gold);font-size:26px}
+  .rmsg{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:20px}
+  .footer{text-align:center;color:#9DB3A2;font-size:12px;margin-top:14px}
+  .pill{position:absolute;top:14px;left:14px;background:var(--greensoft);color:var(--green);font-weight:800;font-size:12px;padding:5px 11px;border-radius:99px}
+  .confetti{position:fixed;top:-10px;width:10px;height:14px;opacity:.9;z-index:5;border-radius:2px;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="stage" id="stage"></div>
+  <div class="footer">מדעי התזונה · מבוא · משחק — גרבי מרי</div>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const QUESTIONS = [
+  {
+    type:"multi", kicker:"אבות המזון",
+    q:"בחרו את כל חמשת אבות המזון",
+    hint:"יש לסמן 5 פריטים ואז ללחוץ ״בדיקה״",
+    options:[
+      {t:"פחמימות",ic:"🍞",ok:true},
+      {t:"חלבונים",ic:"🥩",ok:true},
+      {t:"שומנים",ic:"🥑",ok:true},
+      {t:"ויטמינים",ic:"🍊",ok:true},
+      {t:"מינרלים",ic:"🧂",ok:true},
+      {t:"סוכר לבן",ic:"🍬",ok:false},
+      {t:"קפאין",ic:"☕",ok:false},
+      {t:"חומרים משמרים",ic:"🧪",ok:false},
+    ],
+    fb:"אבות המזון הם: פחמימות, חלבונים, שומנים, ויטמינים ומינרלים. מים חיוניים לגוף אך נהוג למנות אותם בנפרד, וסוכר/קפאין/משמרים אינם אבות מזון."
+  },
+  {
+    type:"single", kicker:"מהו מזון",
+    q:"לשם מה משמש המזון שאנו אוכלים?",
+    options:[
+      {t:"רק כדי להרגיש שובע",ic:"😋",ok:false},
+      {t:"לייצור אנרגיה, בניית תאים ורקמות וקיום תהליכים ביוכימיים",ic:"⚙️",ok:true},
+      {t:"רק לתוספת טעם לחיים",ic:"🍭",ok:false},
+    ],
+    fb:"המזון מספק ״חומרי גלם״ ואנרגיה לבניית תאים ורקמות ולקיום התקין של התהליכים בגוף. כל היצורים החיים זקוקים למזון."
+  },
+  {
+    type:"tf", kicker:"נכון או לא נכון?",
+    q:"״כיום יש בעולם יותר אנשים הסובלים מרעב מאשר אנשים הסובלים מהשמנה.״",
+    answer:false,
+    fb:"לא נכון! לראשונה בהיסטוריה יש יותר אנשים הסובלים מעודף משקל והשמנה (כמיליארד) מאשר מרעב ומתת־תזונה (כ־800 מיליון)."
+  },
+  {
+    type:"sort", kicker:"גורם או סכנה?",
+    q:"האם זהו גורם להשמנה או סכנה שנובעת ממנה?",
+    hint:"מיינו כל כרטיס ללחצן המתאים",
+    cards:[
+      {t:"אכילת מזון מעובד עתיר קלוריות",ic:"🍟",cat:"cause"},
+      {t:"חוסר פעילות גופנית",ic:"🛋️",cat:"cause"},
+      {t:"סוכרת ומחלות לב",ic:"🩸",cat:"danger"},
+      {t:"לחץ על עצמות ומפרקים",ic:"🦴",cat:"danger"},
+      {t:"פרסום אגרסיבי ומזון זבל נגיש",ic:"📺",cat:"cause"},
+      {t:"נדודי שינה ותחושת דיכאון",ic:"😔",cat:"danger"},
+    ],
+    fb:"גורמים = מה שמוביל להשמנה (תזונה לקויה, חוסר פעילות, סביבה משמינה). סכנות = התוצאות הבריאותיות (סוכרת, מחלות לב, לחץ על מפרקים, שינה ומצב רוח)."
+  },
+  {
+    type:"single", kicker:"נקודת מבט אבולוציונית",
+    q:"מדוע, מבחינה אבולוציונית, אנחנו נוטים להשמין כיום?",
+    options:[
+      {t:"הגנים שלנו התפתחו לאגור אנרגיה לתקופות מחסור — אך היום המזון בשפע",ic:"🧬",ok:true},
+      {t:"הגוף שלנו הפסיק לגמרי לשרוף אנרגיה",ic:"🔥",ok:false},
+      {t:"אנשים היום זזים הרבה יותר מבעבר",ic:"🏃",ok:false},
+    ],
+    fb:"במשך אלפי שנים המזון היה במחסור, והגוף התמחה באגירת אנרגיה. הגנים לא השתנו — אך היום המזון זמין ועודף והפעילות פחתה, ולכן אנו משמינים."
+  },
+  {
+    type:"single", kicker:"שינוי גישה",
+    q:"מהי המסקנה המרכזית של המבוא?",
+    options:[
+      {t:"בריאות נמדדת רק לפי המשקל והמראה החיצוני",ic:"⚖️",ok:false},
+      {t:"תזונה נכונה קשורה ישירות לבריאות — וכדאי ללמוד כיצד לאכול נכון",ic:"🌱",ok:true},
+      {t:"אין קשר בין תזונה למחלות",ic:"🚫",ok:false},
+    ],
+    fb:"תזונה לקויה מגדילה את הסיכון למחלות רבות. בריאות אינה רק מראה חיצוני — ולכן חשוב להכיר את מדעי התזונה וללמוד לאכול נכון."
+  },
+];
+
+/* ---------------- STATE ---------------- */
+let idx=0, score=0, answered=false;
+const stage=document.getElementById('stage');
+const TOTAL=QUESTIONS.length;
+
+function render(){
+  answered=false;
+  if(idx>=TOTAL){ return renderResult(); }
+  const Q=QUESTIONS[idx];
+  const prog=Math.round((idx)/TOTAL*100);
+  let html=`
+    <div class="top">
+      <div class="score">ניקוד <b>${score}</b>/${TOTAL}</div>
+      <div class="bar"><i style="width:${prog}%"></i></div>
+    </div>
+    <div class="kicker">${Q.kicker} · שאלה ${idx+1} מתוך ${TOTAL}</div>
+    <h2>${Q.q}</h2>`;
+  if(Q.hint) html+=`<div class="hint">💡 ${Q.hint}</div>`;
+  html+=`<div id="body"></div>
+    <div class="fb" id="fb"></div>
+    <div class="next" id="nextwrap"><button class="btn gold" id="nextbtn">${idx===TOTAL-1?'לתוצאות ←':'לשאלה הבאה ←'}</button></div>`;
+  stage.innerHTML=html;
+  const body=document.getElementById('body');
+  if(Q.type==='single') renderSingle(Q,body);
+  else if(Q.type==='multi') renderMulti(Q,body);
+  else if(Q.type==='tf') renderTF(Q,body);
+  else if(Q.type==='sort') renderSort(Q,body);
+  document.getElementById('nextbtn').onclick=()=>{idx++;render();};
+}
+
+/* single choice */
+function renderSingle(Q,body){
+  const wrap=document.createElement('div'); wrap.className='opts';
+  Q.options.forEach((o)=>{
+    const b=document.createElement('button'); b.className='opt';
+    b.innerHTML=`<span class="ic">${o.ic}</span><span>${o.t}</span><span class="mark">${o.ok?'✓':'✗'}</span>`;
+    b.onclick=()=>{
+      if(answered) return; answered=true;
+      [...wrap.children].forEach(c=>c.disabled=true);
+      if(o.ok){ b.classList.add('correct'); score++; feedback(true,Q.fb); }
+      else{ b.classList.add('wrong');
+        [...wrap.children].forEach((c,i)=>{ if(Q.options[i].ok) c.classList.add('correct'); });
+        feedback(false,Q.fb);
+      }
+    };
+    wrap.appendChild(b);
+  });
+  body.appendChild(wrap);
+}
+
+/* multi select */
+function renderMulti(Q,body){
+  const wrap=document.createElement('div'); wrap.className='opts';
+  const sel=new Set();
+  Q.options.forEach((o,i)=>{
+    const b=document.createElement('button'); b.className='opt';
+    b.innerHTML=`<span class="ic">${o.ic}</span><span>${o.t}</span><span class="mark">${o.ok?'✓':'✗'}</span>`;
+    b.onclick=()=>{ if(answered) return;
+      if(sel.has(i)){sel.delete(i);b.classList.remove('sel');}
+      else{sel.add(i);b.classList.add('sel');}
+    };
+    wrap.appendChild(b);
+  });
+  body.appendChild(wrap);
+  const check=document.createElement('button');
+  check.className='btn'; check.style.marginTop='14px'; check.textContent='בדיקה';
+  check.onclick=()=>{ if(answered) return; answered=true;
+    check.style.display='none';
+    let allok=true;
+    [...wrap.children].forEach((c,i)=>{ c.disabled=true;
+      const ok=Q.options[i].ok, chosen=sel.has(i);
+      c.classList.remove('sel');
+      if(ok&&chosen) c.classList.add('correct');
+      else if(ok&&!chosen){ c.classList.add('correct'); allok=false; }
+      else if(!ok&&chosen){ c.classList.add('wrong'); allok=false; }
+    });
+    if(allok) score++;
+    feedback(allok,Q.fb);
+  };
+  body.appendChild(check);
+}
+
+/* true / false */
+function renderTF(Q,body){
+  const wrap=document.createElement('div'); wrap.className='tf';
+  const mk=(label,val,cls)=>{
+    const b=document.createElement('button'); b.className=cls; b.textContent=label;
+    b.onclick=()=>{ if(answered) return; answered=true;
+      const ok=(val===Q.answer);
+      wrap.querySelectorAll('button').forEach(x=>x.disabled=true);
+      b.style.outline='3px solid '+(ok?'#1E7A3D':'#E85D2F');
+      if(ok) score++;
+      feedback(ok,Q.fb);
+    };
+    return b;
+  };
+  wrap.appendChild(mk('✓  נכון',true,'yes'));
+  wrap.appendChild(mk('✗  לא נכון',false,'no'));
+  body.appendChild(wrap);
+}
+
+/* sort into two bins */
+function renderSort(Q,body){
+  let ci=0, correctCount=0;
+  const cardEl=document.createElement('div'); cardEl.className='card2';
+  const bins=document.createElement('div'); bins.className='bins';
+  const counter=document.createElement('div'); counter.className='hint'; counter.style.textAlign='center';
+  const b1=document.createElement('button'); b1.className='bin cause'; b1.innerHTML='גורם להשמנה<small>מה שמוביל להשמנה</small>';
+  const b2=document.createElement('button'); b2.className='bin danger'; b2.innerHTML='סכנה של השמנה<small>תוצאה בריאותית</small>';
+  function show(){
+    if(ci>=Q.cards.length){
+      if(correctCount===Q.cards.length) score++;
+      cardEl.style.display='none'; bins.style.display='none'; counter.style.display='none';
+      feedback(correctCount===Q.cards.length, Q.fb+`<br><b>סיווגת נכון ${correctCount} מתוך ${Q.cards.length}.</b>`);
+      return;
+    }
+    const c=Q.cards[ci];
+    counter.textContent=`כרטיס ${ci+1} מתוך ${Q.cards.length}`;
+    cardEl.innerHTML=`<span class="ic">${c.ic}</span><span>${c.t}</span>`;
+  }
+  function pick(cat){
+    if(answered) return;
+    const c=Q.cards[ci];
+    const ok=(c.cat===cat);
+    if(ok) correctCount++;
+    const flash=cat==='cause'?b1:b2;
+    flash.style.outline='3px solid '+(ok?'#fff':'#ffd34d');
+    cardEl.style.transition='transform .2s,opacity .2s';
+    cardEl.style.transform='scale(.9)'; cardEl.style.opacity='.3';
+    setTimeout(()=>{ flash.style.outline='none'; cardEl.style.transform=''; cardEl.style.opacity='1'; ci++; show(); },260);
+  }
+  b1.onclick=()=>pick('cause'); b2.onclick=()=>pick('danger');
+  bins.appendChild(b2); bins.appendChild(b1); // RTL order: cause on right
+  body.appendChild(counter); body.appendChild(cardEl); body.appendChild(bins);
+  show();
+}
+
+/* feedback + next */
+function feedback(ok,text){
+  const fb=document.getElementById('fb');
+  fb.className='fb show '+(ok?'ok':'no');
+  fb.innerHTML=`<b>${ok?'יפה מאוד! ✓':'לא מדויק ✗'}</b><br>${text}`;
+  document.getElementById('nextwrap').classList.add('show');
+  fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* result */
+function renderResult(){
+  const pct=Math.round(score/TOTAL*100);
+  let medal='🌱', msg='התחלה טובה! כדאי לחזור על המבוא ולנסות שוב — כל פעם תשתפרו.';
+  if(pct>=100){medal='🏆';msg='מושלם! שלטת בכל חומר המבוא. כל הכבוד!';}
+  else if(pct>=67){medal='🥇';msg='מצוין! הבנת את עיקרי המבוא היטב.';}
+  else if(pct>=50){medal='🥈';msg='כל הכבוד! יש בסיס טוב — שווה לחזור על כמה נושאים.';}
+  stage.innerHTML=`
+    <div class="pill">סיום המשחק</div>
+    <div class="result">
+      <div class="medal">${medal}</div>
+      <div class="kicker" style="text-align:center">התוצאה שלך</div>
+      <div class="scoreline">ענית נכון על <b>${score}</b> מתוך ${TOTAL}</div>
+      <div class="bar" style="margin:14px auto 18px;max-width:220px"><i style="width:${pct}%"></i></div>
+      <div class="rmsg">${msg}</div>
+      <button class="btn" id="again">↺ שחקו שוב</button>
+    </div>`;
+  document.getElementById('again').onclick=()=>{idx=0;score=0;render();};
+  if(pct>=67) burst();
+}
+
+/* confetti */
+function burst(){
+  const cols=['#1E7A3D','#8BC34A','#F0A83A','#E85D2F','#2A9D8F'];
+  for(let i=0;i<70;i++){
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=cols[i%cols.length];
+    c.style.transform=`rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(c);
+    const dur=2200+Math.random()*1600, dx=(Math.random()-.5)*220;
+    c.animate([{transform:`translate(0,0) rotate(0)`,opacity:1},
+      {transform:`translate(${dx}px,102vh) rotate(${720*(Math.random()>.5?1:-1)}deg)`,opacity:.9}],
+      {duration:dur,easing:'cubic-bezier(.3,.6,.5,1)'});
+    setTimeout(()=>c.remove(),dur);
+  }
+}
+
+/* ---------------- WELCOME ---------------- */
+function welcome(){
+  stage.innerHTML=`
+    <div class="hero">
+      <div class="emoji">🥑🍞🥛</div>
+      <div class="kicker">מדעי התזונה · מבוא</div>
+      <h1>המשחק</h1>
+      <div class="sub">בדקו כמה קלטתם מהמבוא: אבות המזון, השמנת יתר, נקודת המבט האבולוציונית ועוד — ${TOTAL} אתגרים קצרים.</div>
+      <div class="chips">
+        <span class="chip">🍞 אבות המזון</span>
+        <span class="chip">⚖️ השמנת יתר</span>
+        <span class="chip">🧬 אבולוציה</span>
+        <span class="chip">🌱 שינוי גישה</span>
+      </div>
+      <button class="btn gold" id="start">▶ בואו נתחיל</button>
+    </div>`;
+  document.getElementById('start').onclick=()=>{idx=0;score=0;render();};
+}
+welcome();
+</script>
+</body>
+</html>
