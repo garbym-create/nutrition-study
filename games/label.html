@@ -123,7 +123,7 @@ function render(){
    <div class="kicker">תווית מזון · שאלה ${idx+1} מתוך ${TOTAL}</div>
    <div class="ask">איזה מוצר בריא יותר?</div>
    <div class="subask">שוו לפי 100 גרם: פחות שומן רווי · נתרן · סוכר, ויותר סיבים</div>
-   <div class="cards">${card(r.a,"a",r.b)}${card(r.b,"b",r.a)}</div>
+   <div class="cards">${Math.random()<0.5?card(r.a,"a",r.b)+card(r.b,"b",r.a):card(r.b,"b",r.a)+card(r.a,"a",r.b)}</div>
    <div class="fb" id="fb"></div>
    <div class="next" id="nextwrap"><button class="btn gold" id="nx">${idx===TOTAL-1?'לתוצאות ←':'לשאלה הבאה ←'}</button></div>`;
   stage.querySelectorAll('.pcard').forEach(c=>c.onclick=()=>pick(c.dataset.k,r));
