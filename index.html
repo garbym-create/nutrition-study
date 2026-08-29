@@ -37,10 +37,6 @@
   .navchip{flex:none;font-family:'Heebo';font-weight:700;font-size:13px;background:#fff;border:3px solid var(--ink);
     border-radius:20px;padding:6px 13px;box-shadow:2px 2px 0 var(--ink);white-space:nowrap;}
   .navchip.active{background:var(--yel);}
-  /* second row — filter by question type (questions mode only) */
-  .typechips{margin-top:6px;}
-  .typechips .navchip{font-size:12px;padding:5px 11px;border-width:2px;}
-  .typechips .navchip.active{background:var(--teal);}
 
   .view{display:none;}
   .view.active{display:block;}
@@ -198,7 +194,6 @@
   <div class="controls">
     <div class="search-box"><span class="ic">🔍</span><input id="search" type="text" placeholder="חיפוש..."></div>
     <div class="navchips" id="navchips"></div>
-    <div class="navchips typechips" id="typechips"></div>
     <div class="count" id="count"></div>
   </div>
 
@@ -691,7 +686,7 @@ const CH_TO_TOPIC = {
 };
 function clean(t){ return t.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}️]/gu,'').trim(); }
 
-let mode='summary', activeChip='all', searchTerm='', typeFilter='all';
+let mode='summary', activeChip='all', searchTerm='';
 
 /* chip label = the chapter name without its explanatory subtitle after the dash */
 function chipLabel(title){return clean(title).split(/\s+[-—–]\s+/)[0].trim();}
@@ -708,23 +703,7 @@ function buildNav(){
       b.onclick=()=>{const el=document.getElementById('qch-'+k);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});};nav.appendChild(b);});
   }
 }
-function highlightChip(el){document.querySelectorAll('#navchips .navchip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
-/* second chip row: filter the question list by question type */
-function buildTypeChips(){
-  const bar=document.getElementById('typechips'); bar.innerHTML='';
-  bar.style.display = mode==='questions' ? '' : 'none';
-  if(mode!=='questions')return;
-  const opts=[['all','הכל']].concat(Object.entries(TYPES).map(([k,v])=>[k,v]));
-  opts.forEach(([k,label])=>{
-    const n=(k==='all')?Q.length:Q.filter(q=>q.ty===k).length;
-    if(!n)return;                                    /* skip types with no questions */
-    const b=document.createElement('button');
-    b.className='navchip'+(typeFilter===k?' active':'');
-    b.textContent=label+' ('+n+')';
-    b.onclick=()=>{typeFilter=k;renderQuestions();buildTypeChips();if(searchTerm)searchQuestions();};
-    bar.appendChild(b);
-  });
-}
+function highlightChip(el){document.querySelectorAll('.navchip').forEach(c=>c.classList.remove('active'));el.classList.add('active');}
 
 /* ===== SUMMARY render ===== */
 function renderSummary(){
@@ -749,7 +728,7 @@ function openSummaryChapter(el,on){if(on)el.classList.add('open');else el.classL
 function renderQuestions(){
   const cont=document.getElementById('questionsContent');cont.innerHTML='';
   Object.keys(TOPICS).forEach(tk=>{
-    const inT=Q.filter(q=>q.topics.includes(tk)&&(typeFilter==='all'||q.ty===typeFilter));
+    const inT=Q.filter(q=>q.topics.includes(tk));
     if(!inT.length)return;
     const sec=document.createElement('div');sec.className='qchapter';sec.id='qch-'+tk;
     // link back to summary
@@ -830,7 +809,7 @@ function setMode(m){
   document.getElementById('view-summary').classList.toggle('active',m==='summary');
   document.getElementById('view-questions').classList.toggle('active',m==='questions');
   document.getElementById('search').value='';searchTerm='';
-  buildNav();buildTypeChips();
+  buildNav();
   document.getElementById('count').textContent='';
   document.getElementById('noresults').style.display='none';
 }
@@ -869,7 +848,7 @@ function searchQuestions(){
 }
 
 /* ===== init ===== */
-renderSummary();renderQuestions();buildNav();buildTypeChips();
+renderSummary();renderQuestions();buildNav();
 document.querySelector('#summaryContent .chapter').classList.add('open');
 
 /* ===== Text-to-Speech controller ===== */
